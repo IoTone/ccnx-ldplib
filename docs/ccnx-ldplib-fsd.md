@@ -40,6 +40,7 @@ Free distribution under
 Add link to this document's commit history.
 
 1.0 QUALITY CONTROL
+
   1.1. Development Methodology
 
 For the purposes of this project we are using a combination of XP and traditional waterfall model.
