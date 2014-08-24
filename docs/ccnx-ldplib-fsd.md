@@ -84,44 +84,104 @@ Describe the scope of work
 
   - CCNx LDP Errors : All Errors that occur in the course of using CCNx LDP.  The errors are defined contain enough information to diagnose issues. 
 
+  - CCNx LDP Namespace : Any URI that identifies the namespace used for discovery and registration.  Applications and Services should agree upon useful namespaces
+
   *2.3* __Assumptions__
 
 The following assumptions are made regarding this project:
 
-- TODO
+- All CCNx LDP clients are running their own ccnd gateway, and are on the same API version
+- Handling losses of connectivity and managing errors in the network transport are the responsibility
+- No distinction is made between the kinds of devices, they could be mobiles, servers, or IoT nodes.
+- It is assumed that Assymetric Keys are acceptable for use by CCNx LDP Clients
  
   *2.4* __Risks and Pitfalls__
 
-- TODO
+- The biggest risk is in managing the complexity in briding connectivity across subnets and in a WAN
 
   *2.5* __Key Performance Indicators (KPIs)__
 
-Define KPIs
+The KPIs for ccnx-ldplib are concerned with the latency and scalability:
+
+- 100ms to receive a response on a discovery request for local subnet
+- 100ms to write 10K of data during a registration request
+- 100ms to enumerate 1000 5K nodes in a particular namespace
 
   *2.6* __Test Harness and Benchmark Design__
 
-TODO
+Latency benchmark
 
 Pre-Conditions:
 
-- list pre conditions
+- 2 Peers on same subnet
+- low amount of traffic on the subnet
 
 Inputs:
 
-- list inputs
+- Peer A metadata
+- Peer B metadata
 
 Outputs:
 
-- list outputs
+- start time discovery request
+- stop time discovery request complete
 
 Post-Conditions:
 
-- list post conditions
+- Peer A has received all metadata
+- Peer A has recorded discovery request latency
 
+
+Metadata Registration benchmark
+
+Pre-Conditions:
+
+- 2 Peers on same subnet
+- low amount of traffic on the subnet
+
+Inputs:
+
+- Peer A metadata
+- Peer B metadata
+
+Outputs:
+
+- start time metadata write request by Peer A
+- stop time metadata write request complete by Peer A
+- start time metadata discovery request by Peer B
+- stop time metadata discovery request complete by Peer B
+
+Post-Conditions:
+
+- Peer A has received all metadata
+- Peer A has recorded discovery request latency
+
+1K Name Enumeration Benchmark
+
+Pre-Conditions:
+
+- 1 Peers on same subnet
+- low amount of traffic on the subnet
+
+Inputs:
+
+- Peer A metadata
+- Peer B1-B1000 metadata
+
+Outputs:
+
+- start time discovery request
+- stop time discovery request complete
+
+Post-Conditions:
+
+- Peer A has received all metadata
+- Peer A has recorded discovery request latency
 
   *2.7* __Roles and Responsibilities__
 
-Todo
+Development and QA will be performed by the IoTone team.
+
 
 *3.0* __FUNCTIONAL SYSTEM DESIGN__
 
