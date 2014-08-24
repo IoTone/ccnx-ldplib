@@ -47,7 +47,7 @@ For the purposes of this project we are using a combination of XP and traditiona
 
   *1.2* __Change Control__
 
-All code will be managed by source control. Changes to the specification will be reflected in this document and reviewed by the team. Reviewers should "sign off" in the "Revision History" section.
+All code will be managed by git source control. Changes to the specification will be reflected in this document and reviewed by the team. Reviewers should "sign off" in the "Revision History" section.
  
   *1.3* __Audit Plan__
 

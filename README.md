@@ -22,4 +22,4 @@ Solution
 
 CCNx offers a secure protocol that can be used to support easy discovery of devices and services.  The abridged description of this solution involves each client device or service to publish metadata periodically, in order to "register" under a particular namespace.  Once registered, the API offers ways to discover peers, and enumerate details of peers.
 
-Full details of this solution are defined in the [ccnx-ldplib FSD]().
+Full details of this solution are defined in the [ccnx-ldplib FSD](https://github.com/IoTone/ccnx-ldplib/blob/master/docs/ccnx-ldplib-fsd.md).
