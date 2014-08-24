@@ -31,10 +31,6 @@ Developers need secure, easy way to discover devices and services in a manner th
 
 N/A
 
-**Distribution:**
-
-Free distribution under 
-
 # REVISION HISTORY
 
 Add link to this document's commit history.
@@ -47,7 +43,7 @@ For the purposes of this project we are using a combination of XP and traditiona
 
   *1.2* __Change Control__
 
-All code will be managed by git source control. Changes to the specification will be reflected in this document and reviewed by the team. Reviewers should "sign off" in the "Revision History" section.
+All code will be managed by git source control. Changes to this specification will be reflected in this document and reviewed by the team. Spec Reviewers should "sign off" in the "Revision History" section.
  
   *1.3* __Audit Plan__
 
@@ -56,7 +52,6 @@ QA testing will be performed by a continuous integration server before finalizin
 *2.0* __PROJECT MANAGEMENT FRAMEWORK__
 
 This section list some general definitions and constrains around the project described in the FSD.
-
  
   *2.1* __System Overview__
 
