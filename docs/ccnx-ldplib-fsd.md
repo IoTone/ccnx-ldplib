@@ -15,7 +15,7 @@ Version/Date:        v0.9.0
 
 **Abstract:**
 
-Developers need secure, easy way to discover devices and services in a manner that can work without prior knowledge of network addresses, and can span across networks.  CCNx offers a secure protocol that can be used to support easy discovery of devices and services.  The abridged description of this solution involves each client device or service to publish metadata periodically, in order to "register" under a particular namespace.  Once registered, the API offers ways to discover peers, and enumerate details of peers.
+Developers need secure, easy way to discover or advertise (publish) devices and services in a manner that can work without prior knowledge of network addresses, and can span across networks.  CCNx offers a secure protocol that can be used to support easy discovery of devices and services.  This solution enables each client device or service to publish metadata periodically, in order to "register" under a particular namespace.  Once registered, the API offers ways to discover peers, and enumerate details of peers.  The CCNx Lightweight Discovery Protocol Lib is the API impelentation written in C language.  By utilizing name heirarchies rather than relying upon the ephemeral nature of network addressing, the CCNx LDP library enables local and global scenarios for service and and device discovery.
 
 
 
@@ -33,7 +33,7 @@ N/A
 
 # REVISION HISTORY
 
-Add link to this document's commit history.
+Revision history is available on github: https://github.com/IoTone/ccnx-ldplib/commits/master/docs/ccnx-ldplib-fsd.md
 
 *1.0* __QUALITY CONTROL__
 
@@ -43,7 +43,7 @@ For the purposes of this project we are using a combination of XP and traditiona
 
   *1.2* __Change Control__
 
-All code will be managed by git source control. Changes to this specification will be reflected in this document and reviewed by the team. Spec Reviewers should "sign off" in the "Revision History" section.
+All code will be managed by git source control. Changes to this specification will be reflected in this document and reviewed by the team. Spec Reviewers should "sign off" in the "Revision History" section (via Git commits or Gibhub Issues).
  
   *1.3* __Audit Plan__
 
@@ -55,11 +55,34 @@ This section list some general definitions and constrains around the project des
  
   *2.1* __System Overview__
 
-Describe the system here
+In a typical deployment scenario, devices are operating in proximity to each other by a variety of network interfaces: Bluetooth, WiFi, 4G, or some network interface to be defined.  Devices may enter and leave networks, and networks may change status between available and unavailable.
 
-  *2.2* __Scope__
+Services are deployed with the notion they should be available to devices or other services.  For devices or services to communicate, they will typically need to find each other on the network.
+
+
+
+
+  *2.2* __Definitions__
 
 Describe the scope of work
+
+  - CCNx LDP Client : Any device or service using the CCNx Lightweight Discovery Protocol.
+
+  - CCNx LDP Peer : Any network connected CCNx LDP Client.
+
+  - CCNx LDP Command Protocol : The protocol for allowing CCNx LDP Peers to send commands to each other. 
+
+  - CCNx LDP Metadata :  The metadata contains key, unique identifying attributes of a CCNx LDP Client, as well as any other attributes required by clients. 
+
+  - CCNx LDP Service: A service is defined as a capability provided to a Peer 
+
+  - CCNx LDP Local Discovery Service : The service that handles discovery of CCNx LDP Client Peers running on a local network, allowing connections to be established with zero configuration or some user input.
+
+  - CCNx LDP Remote Client : Remote designation indicates the CCNx LDP Client is operating on a remote network or operating on a different subnet 
+
+  - CCNx LDP Discovery Phase : The phase in which CCNx LDP Clients register their metadata and optionally finds CCNx LDP Peer to interact with  
+
+  - CCNx LDP Errors : All Errors that occur in the course of using CCNx LDP.  The errors are defined contain enough information to diagnose issues. 
 
   *2.3* __Assumptions__
 
@@ -187,5 +210,6 @@ N/A - No need to do this.  It will all get done this week
 
 *6.0* __APPENDIX B - References__
 
-N/A - No need to do this.  It will all get done this week
+- [Apple Bonjour](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1): While addressing the same feature set as CCNx LDP, it does not address a number of key points.  There is no mention of security in the Bonjour protocol.  For example, one has no way to verify the authenticity of a service or host.  Malicious devices can easily get involved in MITM attacks and spoof a valid host or service.  There is no notion of access control. Any host can access any published service.  And due to the implementation, without special provisions at the router level, Bonjour is not designed to operate across subnets, limiting its usefulness for 'global' scale deployments.  There are a number of descriptions for how to use [DNS-sd](http://dns-sd.org), multicast-routing, or proxy-bonjour services.
+- [UPnP](): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
 
