@@ -39,48 +39,48 @@ Free distribution under
 
 Add link to this document's commit history.
 
-1.0 QUALITY CONTROL
+1.0 __QUALITY CONTROL__
 
-  1.1. Development Methodology
+  1.1. __Development Methodology__
 
 For the purposes of this project we are using a combination of XP and traditional waterfall model.
 
-  1.2 Change Control
+  1.2 __Change Control__
 
 All code will be managed by source control. Changes to the specification will be reflected in this document and reviewed by the team. Reviewers should "sign off" in the "Revision History" section.
  
-  1.3 Audit Plan
+  1.3 __Audit Plan__
 
 QA testing will be performed by a continuous integration server before finalizing release.
 
-2.0 PROJECT MANAGEMENT FRAMEWORK
+2.0 __PROJECT MANAGEMENT FRAMEWORK__
 
 This section list some general definitions and constrains around the project described in the FSD.
 
  
-  2.1. System Overview
+  2.1. __System Overview__
 
 Describe the system here
 
-  2.2 Scope
+  2.2 __Scope__
 
 Describe the scope of work
 
-  2.3 Assumptions
+  2.3 __Assumptions__
 
 The following assumptions are made regarding this project:
 
 - TODO
  
-  2.3 Risks and Pitfalls
+  2.3 __Risks and Pitfalls__
 
 - TODO
 
-  2.4 Key Performance Indicators (KPIs)
+  2.4 __Key Performance Indicators (KPIs)__
 
 Define KPIs
 
-  2.5 Test Harness and Benchmark Design
+  2.5 __Test Harness and Benchmark Design__
 
 TODO
 
@@ -101,22 +101,23 @@ Post-Conditions:
 - list post conditions
 
 
-  2.6 Roles and Responsibilities
+  2.6 __Roles and Responsibilities__
 
 Todo
 
-3.0 FUNCTIONAL SYSTEM DESIGN
-  3.1 Feature Specification
+3.0 __FUNCTIONAL SYSTEM DESIGN__
+
+  3.1 __Feature Specification__
 
 | **Feature** | **Description** | **ID** |
 | --- | --- | --- |
 | stuff | things | foo |
 
-  3.1 Infrastructure
+  3.2 __Infrastructure__
 
 There is no support infrastructure required in this project.
  
-  3.2 Platform
+  3.2 __Platform__
 
 The following devices are planned for local testing to validate the design:
 
@@ -125,41 +126,41 @@ The following devices are planned for local testing to validate the design:
 - Dell x86 Android 8"
 - Linux x86 Server
 
-  3.3 Operating Systems
+  3.3 __Operating Systems__
 
 Android 4.0.x – 4.4.x must be supported.
 
-  3.4 Languages and Input Methods
+  3.4 __Languages and Input Methods__
 
 N/A
 
-  3.5 Network
+  3.5 __Network__
 
 The network will not be used in the app and should be turned off for testing.
 
-  3.6 Development Tools
+  3.6 __Development Tools__
 
 Development tools used:
 
 - --Android sdk
 
-  3.7 Operational Support
+  3.7 __Operational Support__
 
 N/A
 
-  3.8 Process Design
+  3.8 __Process Design__
 
 Add a diagram
 
-  3.9 UI Specification
+  3.9 __UI Specification__
 
 N/A
 
-  3.10 Data Model
+  3.10 __Data Model__
 
 N/A
 
-4.0 Software Quality
+4.0 __Software Quality__
 
 All software delivered for this project will undergo a Software Quality Engineering Testing Phase at each milestones deliverable. The goal of testing is to ensure delivery of code that meets required quality standards for this project at each phase.
 
@@ -175,22 +176,21 @@ For each phase, all software delivered will be delivered with all P1 and P2 bugs
 
 Bugs will be tracked in Github Issues for this project.  Anyone will be able to add bugs or make comments.  The development team is willing to take constructive pull requests without a contributor agreement.
 
-  4.1 Test Plan
+  4.1 __Test Plan__
 
 | **Summary** | **Description** | **Expected Result** | **ID** |
 | --- | --- | --- | --- |
 | a summary | a descr. | expected | 1.1.1 |
 
-
-  4.2 Test Case Design
+  4.2 __Test Case Design__
 
 TODO
 
-5.0 APPENDIX A - WORK PLAN AND DELIVERABLES SCHEDULE
+5.0 __APPENDIX A - WORK PLAN AND DELIVERABLES SCHEDULE__
 
 N/A - No need to do this.  It will all get done this week
 
-6.0 APPENDIX B - References
+6.0 __APPENDIX B - References__
 
 N/A - No need to do this.  It will all get done this week
 
