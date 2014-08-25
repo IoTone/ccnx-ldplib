@@ -196,17 +196,17 @@ Development and QA will be performed by the IoTone team.
 
   *3.1.1* __Peer Metadata Format__
 
-    The Peer Metadata is intended to be an internal representation of Peer state at any given time.  A structured format is preferred over a list or config file.  To simplify the effort, Peer Metadata is based on the [Universal Device Metadata Specification]() and/or the Universal Service Metadata, and offers a superset of attributes.  Each required attribute is described as follows: 
+* The Peer Metadata is intended to be an internal representation of Peer state at any given time.  A structured format is preferred over a list or config file.  To simplify the effort, Peer Metadata is based on the [Universal Device Metadata Specification]() and/or the Universal Service Metadata, and offers a superset of attributes.  Each required attribute is described as follows: 
 
-    peer-id: a name defined by a Peer to uniquely identify this peer as a member of a Peer Group.  TODO: Define how we deal with duplicate peer-ids, and spoofing of peer-ids.  Also explain how peer-ids are generated. 
+* peer-id: a name defined by a Peer to uniquely identify this peer as a member of a Peer Group.  TODO: Define how we deal with duplicate peer-ids, and spoofing of peer-ids.  Also explain how peer-ids are generated. 
 
-    usm_services: An array containing the services exported by this Peer.  A usm_services object is defined in the Universal Service Metadata Spefication.
+* usm_services: An array containing the services exported by this Peer.  A usm_services object is defined in the Universal Service Metadata Spefication.
 
-    udm_devices: An array containing the devices exported by this Peer.  A usm_devices object is defined in the Universal Device Metadata Spefication.
+* udm_devices: An array containing the devices exported by this Peer.  A usm_devices object is defined in the Universal Device Metadata Spefication.
 
-    status: Represents the state of the Peer [available, pairing, paired, unpairing, unavailable] 
+* status: Represents the state of the Peer [available, pairing, paired, unpairing, unavailable] 
 
-    status-detail:  Will contain additional detail for the status, or null if there is no additional detail. 
+* status-detail:  Will contain additional detail for the status, or null if there is no additional detail. 
 
 ```
 {
