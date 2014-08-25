@@ -59,9 +59,6 @@ In a typical deployment scenario, devices are operating in proximity to each oth
 
 Services are deployed with the notion they should be available to devices or other services.  For devices or services to communicate, they will typically need to find each other on the network.
 
-
-
-
   *2.2* __Definitions__
 
 Describe the scope of work
@@ -189,7 +186,11 @@ Development and QA will be performed by the IoTone team.
 
 | **Feature** | **Description** | **ID** |
 | --- | --- | --- |
-| stuff | things | foo |
+| Peer Metadata Format | The Metadata is used by Clients to publish their information and find Peers | 3.1.1 |
+| Registration Phase | Each Peer must register to publish metadata | 3.1.2 |
+| Discovery Phase | Remote CCNx LDP Client has to discover Peers | 3.1.3 |
+| Error Messages | Errors are defined for all possible error conditions | 3.1.4 |
+| | |
 
   *3.2* __Infrastructure__
 
