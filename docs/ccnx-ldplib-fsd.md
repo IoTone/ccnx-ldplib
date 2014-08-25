@@ -66,7 +66,7 @@ Describe the scope of work
   - CCNx LDP Client : Any device or service using the CCNx Lightweight Discovery Protocol.
 
   - CCNx LDP Namespace : Any URI that identifies the namespace used for discovery and registration.  Applications and Services should agree upon useful namespaces
-  
+
   - CCNx LDP Peer : Any network connected CCNx LDP Client.
 
   - CCNx LDP Peer Group : Any CCNx LDP Peers registered under a particular namespace.
@@ -347,10 +347,36 @@ We will organize the following hierarchy of naming:
 
 -    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
 
-
 -    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD” 
 
 If we substitute the %s for a peer-id, we can start to see how data gets organized.  Every member of a Peer Group will have the above information defined in their Local Discovery Service. 
+
+  *3.1.4* __Registration Phase__
+
+Diagram A below describes the process in which an LDP Client can register itself as an LDP Peer to a particular Peer Group.  Each LDP Client will be running or have available a Local Discovery Service, which is where the Clients register themselves as Peers.  
+
+*DIAGRAM A*
+```
+        +-----------+                                      
+        |           |       Publish Peer                   
+        |           |       Metadata {                     
+        |    +------v-----+   peer-id:       +------------+
++-------+    | Local      |    ....          | Joined     |
+|Peer A |    | Discovery  | }                | Peer       |
++-------+    | Service    +-+----------------> Group      |
+             |            | +----------------+            |
+             +------------+ |                +------------+
+                            |                              
++-------+----+------------+------------------+------------+
++-------+    +------------+ |                +------------+
+|Peer B |    | Local      <-+ Route interests|            |
++-------+    | Discovery  |   in metadata to |            |
+             | Service    |   adjacent peers |            |
+             |            |                  |            |
+             +------------+                  +-------- ---+
+
+```
+Once registered, a client is free to initiate a discovery request, in which they will receive Peer Metadata (Defined in Section 4.1.4).  It is up to a Remote Nexray Client to discern whether or not to attempt a Pairing with a particular Peer.  This case below describes a situation where there are only two Peers, one with a USB-Connected Nexray Scanner. 
 
   *3.2* __Infrastructure__
 
