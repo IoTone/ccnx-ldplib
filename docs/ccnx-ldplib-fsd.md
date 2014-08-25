@@ -194,6 +194,104 @@ Development and QA will be performed by the IoTone team.
 | Error Messages | Errors are defined for all possible error conditions | 3.1.6 |
 | | |
 
+    *3.1.1* __Peer Metadata Format__
+
+    The Peer Metadata is intended to be an internal representation of Peer state at any given time.  A structured format is preferred over a list or config file.  To simplify the effort, Peer Metadata is based on the [Universal Device Metadata Specification]() and/or the Universal Service Metadata, and offers a superset of attributes.  Each required attribute is described as follows: 
+
+    peer-id: a name defined by a Peer to uniquely identify this peer as a member of a Peer Group.  TODO: Define how we deal with duplicate peer-ids, and spoofing of peer-ids.  Also explain how peer-ids are generated. 
+
+    usm_services: An array containing the services exported by this Peer.  A usm_services object is defined in the Universal Service Metadata Spefication.
+
+    udm_devices: An array containing the devices exported by this Peer.  A usm_devices object is defined in the Universal Device Metadata Spefication.
+
+    status: Represents the state of the Peer [available, pairing, paired, unpairing, unavailable] 
+
+    status-detail:  Will contain additional detail for the status, or null if there is no additional detail. 
+
+```
+{
+   "peer-id":"1230sdf1290000012",
+   "usm_services":[
+      {
+         "usm_key":"froglegs.local",
+         "usm_type":"webserver"
+      }
+   ],
+   "udm_devices":[
+      {
+         "udm_key":"0585b8a6",
+         "udm_model_name":"Nexus",
+         "udm_model_number":"Nexus 7",
+         "udm_oem":"ASUS",
+         "udm_guid":"0585b8a6",
+         "udm_os_version":"4.4.2",
+         "udm_os":"Android",
+         "udm_type":"tablet",
+         "udm_memory_volatile":{
+            "size":"1GB"
+         },
+         "udm_memory_non_volatile":{
+            "size":"16GB",
+            "type":"flash"
+         },
+         "udm_chipset_details":{
+            "udm_chipset_inst_set":"armeabi-v7a",
+            "udm_chipset_vendor":"Qualcomm",
+            "udm_chipset_type":"Snapdragon S4Pro",
+            "udm_cpu_max_frequency":"1.5 GHz",
+            "udm_cpu_number_of_cores":"4"
+         },
+         "udm_displays":[
+            {
+               "display_resolution":"1200x1824",
+               "ppi":"323"
+            }
+         ],
+         "udm_network_interfaces":[
+            {
+               "lo":[
+                  {
+                     "address":"127.0.0.1",
+                     "family":"IPv4",
+                     "internal":true
+                  },
+                  {
+                     "address":"::1",
+                     "family":"IPv6",
+                     "internal":true
+                  }
+               ]
+            },
+            {
+               "wlan0":[
+                  {
+                     "address":"10.0.0.105",
+                     "family":"IPv4",
+                     "internal":false
+                  },
+                  {
+                     "address":"fe80::de85:deff:fe90:4cb9",
+                     "family":"IPv6",
+                     "internal":false
+                  }
+               ]
+            }
+         ],
+         "udm_sensors":{
+            "accelerometer":"1",
+            "light":"1",
+            "gyroscope":"1",
+            "orientation":"1",
+            "magnetic":"1",
+            "sound":"1"
+         }
+      }
+   ],
+   "status":"available",
+   "status-detail":null
+}
+```
+
   *3.2* __Infrastructure__
 
 There is no support infrastructure required in this project.
@@ -274,5 +372,5 @@ N/A - No need to do this.  It will all get done this week
 *6.0* __APPENDIX B - References__
 
 - [Apple Bonjour](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1): While addressing the same feature set as CCNx LDP, it does not address a number of key points.  There is no mention of security in the Bonjour protocol.  For example, one has no way to verify the authenticity of a service or host.  Malicious devices can easily get involved in MITM attacks and spoof a valid host or service.  There is no notion of access control. Any host can access any published service.  And due to the implementation, without special provisions at the router level, Bonjour is not designed to operate across subnets, limiting its usefulness for 'global' scale deployments.  There are a number of descriptions for how to use [DNS-sd](http://dns-sd.org), multicast-routing, or proxy-bonjour services.
-- [UPnP](): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
+- [UPnP](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0.pdf): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
 
