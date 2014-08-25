@@ -307,7 +307,7 @@ The following devices are planned for local testing to validate the design:
 
   *3.4* __Operating Systems__
 
-Android 4.0.x – 4.4.x must be supported.
+Android 4.0.x – 4.4.x must be supported.  Linux x86, ARM.  Mac OS X.   Windows.
 
   *3.5* __Languages and Input Methods__
 
@@ -315,13 +315,15 @@ N/A
 
   *3.6* __Network__
 
-The network will not be used in the app and should be turned off for testing.
+Assumption for testing is that devices will be using TCP/IP over Wifi, ethernet, or possibly a 4G network.  For purposes of testing, the project will focus on TCP/IP and WiFi.
 
   *3.7* __Development Tools__
 
 Development tools used:
 
-- --Android sdk
+- gcc
+- make
+- Android SDK
 
   *3.8* __Operational Support__
 
@@ -329,7 +331,7 @@ N/A
 
   *3.9* __Process Design__
 
-Add a diagram
+See detailed diagrams defined in __3.1.1 - 3.1.6__.
 
   *3.10* __UI Specification__
 
@@ -337,7 +339,7 @@ N/A
 
   *3.11* __Data Model__
 
-N/A
+The datamodel is fully defined in 3.1.1 and 3.1.2.
 
 *4.0* __Software Quality__
 
@@ -353,17 +355,27 @@ For each phase, all software delivered will be delivered with all P1 and P2 bugs
 - P4 – Low Priority, generally addresses cosmetic issues but has little effect on functionality. Usually used to ensure bug will be deferred until after release.
 - P5 – Insignificant or Informative issue, typically a note to developer to decide how to prioritize issue, as RFE or as Not-A-Bug. 
 
-Bugs will be tracked in Github Issues for this project.  Anyone will be able to add bugs or make comments.  The development team is willing to take constructive pull requests without a contributor agreement.
+Bugs will be tracked in [Github Issues for this project](https://github.com/IoTone/ccnx-ldplib/issues).  Anyone will be able to add bugs or make comments.  The development team is willing to take constructive pull requests without a contributor agreement.
 
   *4.1* __Test Plan__
 
 | **Summary** | **Description** | **Expected Result** | **ID** |
 | --- | --- | --- | --- |
-| a summary | a descr. | expected | 1.1.1 |
+| Validate Peer Metadata | Peer Metadata should be valid | Conforms to definition in 3.1.1 | TC4.1.1 |
+| Parse CMD Format | All messages going in and out should be valid and parseable into component form, as described in 3.1.2 | TC4.1.2 |
+| Verify naming schema | All content should be defined using a common naming scheme, defined in 3.1.3 | TC4.1.3 |
+| Perform Registration Request | A client should be able to perform registration as defined in 3.1.4 | TC4.1.4 |
+| Perform a Discovery Request | A client should be able to perform discovery as defined in 3.1.5 | TC4.1.5 |
+| Errors are defined and thrown at right times | A client should get proper error reporting when error conditions occur | TC4.1.6 |
+
 
   *4.2* __Test Case Design__
 
-TODO
+Test cases will be designed using Google Test 1.6.0 (https://code.google.com/p/googletest/).  Google Test is C++ based, though it can be used to test the C code base.
+
+Units will verify api conformance and correctness.
+
+System tests can be run to verify the functioning of the system.  Simulating two network peers will require either a remote trigger or a manual process execution.  For purposes of this project, manual testing will be used to validate system functionality.  Results will be published under the testresults directory.
 
 *5.0* __APPENDIX A - WORK PLAN AND DELIVERABLES SCHEDULE__
 
