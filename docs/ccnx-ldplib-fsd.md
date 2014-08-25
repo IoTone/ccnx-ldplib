@@ -329,6 +329,27 @@ Currently, we only need individual commands, so we will only need to implement h
 
 Since this specification scope is limited to discovery, no effort is made to define commands to support use cases beyond discovery.  One can use the defined format above to create new command types.
 
+A Peer initiating a CMD request to one or more peers will require the remote Peers to be listening for incoming requests.  The simplest approach is to set up an event listener at each Peer, after completing the initial registration to join the default Peer Group.  This event loop, in pseudo-code, will do the following: 
+
+```
+While (keepProcessing) { 
+  nameToListenFor = “ccnx:/ldp.iotone.io/pg/default/peers/<MYPEERID>/CMD” 
+  waitForIncomingCMD(nameToListenFor, callbackHandler)) 
+} 
+
+callbackHandler(Data) { 
+  CMD = parseCMD(Data) 
+  processCMD(CMD) 
+
+  if (CMD requires UI Notification) { 
+    JNIcallbackToAndroidMessageQueue(CMD, Data); 
+
+  } 
+} 
+```
+
+A Peer should assume each Remote Peer will process incoming CMD messages immediately.  Deferred processing would result in possibility of a timeout for time sensitive requests.  It is possible a Remote Peer may decide it will discard requests if they have expired or are irrelevant.  A Remote Peer should send a response message if necessary.
+
   *3.1.3* __Content Naming Scheme__
 
 In order to implement this design independent of the network hardware location, or transport, we will use a technique based around naming, where all participants in the network are named, all content is named, and all participants are verifiable based on the name and associated keys used to sign content. 
@@ -355,8 +376,9 @@ If we substitute the %s for a peer-id, we can start to see how data gets organiz
 
 Diagram A below describes the process in which an LDP Client can register itself as an LDP Peer to a particular Peer Group.  Each LDP Client will be running or have available a Local Discovery Service, which is where the Clients register themselves as Peers.  
 
-*DIAGRAM A*
+*DIAGRAM A*<sup>1</sup>
 ```
+        start registration
         +-----------+                                      
         |           |       Publish Peer                   
         |           |       Metadata {                     
@@ -376,7 +398,36 @@ Diagram A below describes the process in which an LDP Client can register itself
              +------------+                  +-------- ---+
 
 ```
-Once registered, a client is free to initiate a discovery request, in which they will receive Peer Metadata (Defined in Section 4.1.4).  It is up to a Remote Nexray Client to discern whether or not to attempt a Pairing with a particular Peer.  This case below describes a situation where there are only two Peers, one with a USB-Connected Nexray Scanner. 
+1: Diagram source: http://asciiflow.com/#0B2j69b0ryZjAelVmdGd0dFBlU0k
+
+Once registered, a client is free to initiate a discovery request, in which they will receive Peer Metadata (Defined in Section 3.1.1).  It is up to a Remote Client to discern whether or not to accept communications from a particular Peer.  This case below describes a situation where there are only two Peers.
+
+
+
+  *3.1.5* __Discovery Phase__
+
+*Diagram B*<sup>2</sup>
+```
+         Start Discovery                                   
+        +-----------+                                      
+        |           |       Get PeerPeer                   
+        |           |       Metadata {                     
+        |    +------v-----+   peer-id:       +-------+----+
++-------+    | Local      |    ....          | Retreive   |
+|Peer A |    | Discovery  | }                | Peer       |
++-------+    | Service    <-+----------------+ Group      |
+             |            | +----------------> Metadata   |
+             +------------+ |                +------------+
+                            |                              
++-------+----+------------+------------------+------------+
++-------+    +------------+ |                +------------+
+|Peer B |    | Local      +-+ Route interests| Previously |
++-------+    | Discovery  |   in metadata to | Joined in  |
+             | Service    |   adjacent peers | Peer       |
+             |            <------------------+ Group      |
+             +------------^                  +------------+
+```
+2: Diagram source: http://asciiflow.com/#0B2j69b0ryZjAbS1yZ0Zhc0x4dE0
 
   *3.2* __Infrastructure__
 
@@ -471,4 +522,3 @@ N/A - No need to do this.  It will all get done this week
 
 - [Apple Bonjour](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1): While addressing the same feature set as CCNx LDP, it does not address a number of key points.  There is no mention of security in the Bonjour protocol.  For example, one has no way to verify the authenticity of a service or host.  Malicious devices can easily get involved in MITM attacks and spoof a valid host or service.  There is no notion of access control. Any host can access any published service.  And due to the implementation, without special provisions at the router level, Bonjour is not designed to operate across subnets, limiting its usefulness for 'global' scale deployments.  There are a number of descriptions for how to use [DNS-sd](http://dns-sd.org), multicast-routing, or proxy-bonjour services.
 - [UPnP](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0.pdf): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
-
