@@ -376,7 +376,13 @@ Diagram A below describes the process in which an LDP Client can register itself
              +------------+                  +-------- ---+
 
 ```
+
 Once registered, a client is free to initiate a discovery request, in which they will receive Peer Metadata (Defined in Section 4.1.4).  It is up to a Remote Nexray Client to discern whether or not to attempt a Pairing with a particular Peer.  This case below describes a situation where there are only two Peers, one with a USB-Connected Nexray Scanner. 
+
+<sup>http://asciiflow.com/#0B2j69b0ryZjAelVmdGd0dFBlU0k</sup>
+
+  *3.1.5* __Discovery Phase__
+
 
   *3.2* __Infrastructure__
 
