@@ -194,7 +194,7 @@ Development and QA will be performed by the IoTone team.
 | Error Messages | Errors are defined for all possible error conditions | 3.1.6 |
 | | |
 
-    *3.1.1* __Peer Metadata Format__
+  *3.1.1* __Peer Metadata Format__
 
     The Peer Metadata is intended to be an internal representation of Peer state at any given time.  A structured format is preferred over a list or config file.  To simplify the effort, Peer Metadata is based on the [Universal Device Metadata Specification]() and/or the Universal Service Metadata, and offers a superset of attributes.  Each required attribute is described as follows: 
 
