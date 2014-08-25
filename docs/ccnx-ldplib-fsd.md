@@ -355,7 +355,7 @@ If we substitute the %s for a peer-id, we can start to see how data gets organiz
 
 Diagram A below describes the process in which an LDP Client can register itself as an LDP Peer to a particular Peer Group.  Each LDP Client will be running or have available a Local Discovery Service, which is where the Clients register themselves as Peers.  
 
-*DIAGRAM A*<sup>1</sup>
+*DIAGRAM A*
 ```
         +-----------+                                      
         |           |       Publish Peer                   
@@ -376,7 +376,7 @@ Diagram A below describes the process in which an LDP Client can register itself
              +------------+                  +-------- ---+
 
 ```
-Diagram source: http://asciiflow.com/#0B2j69b0ryZjAelVmdGd0dFBlU0k
+Diagram source: <sup>http://asciiflow.com/#0B2j69b0ryZjAelVmdGd0dFBlU0k</sup>
 
 Once registered, a client is free to initiate a discovery request, in which they will receive Peer Metadata (Defined in Section 4.1.4).  It is up to a Remote Nexray Client to discern whether or not to attempt a Pairing with a particular Peer.  This case below describes a situation where there are only two Peers, one with a USB-Connected Nexray Scanner. 
 
