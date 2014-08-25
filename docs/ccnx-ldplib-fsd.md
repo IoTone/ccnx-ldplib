@@ -292,6 +292,21 @@ Development and QA will be performed by the IoTone team.
 }
 ```
 
+  *3.1.2* __CMD Message Format__
+
+The way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace.  This should trigger a response by the peer, or the request will be ignored if the Peer is unavailable or otherwise Paired already with a different member of the Peer group.  The basic commands required for implementation: 
+
+
+- “PING” : A Peer can request a ping ack response
+- “PING_ACK” : A Peer responds to a ping with a ping ack
+
+
+A command will be issued with the following format: 
+
+{peerID:[CMD1, CMD2, …., CMD N] } 
+
+Currently, we only need individual commands, so we will only need to implement handling of a single argument in the array.  It should be possible to define a CMD as a JSON object, but the current implement will use the strings above.  The idea is that a peer initiates a CMD in the namespace of the desired PeerID. 
+
   *3.2* __Infrastructure__
 
 There is no support infrastructure required in this project.
