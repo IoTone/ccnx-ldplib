@@ -298,14 +298,32 @@ The way in which messages are passed back and forth between Peers is by writing 
 
 
 - “PING” : A Peer can request a ping ack response
+
+```
+"PING": {
+  "peer-id": "my-peer-id",
+  "correlation-id": "my-correlation-id",
+  "timestamp": "optional-timestamp-string-send-time"
+}
+```
+
 - “PING_ACK” : A Peer responds to a ping with a ping ack
 
+```
+"PING_ACK": {
+  "peer-id": "my-peer-id",
+  "correlation-id": "my-correlation-id",
+  "timestamp": "optional-timestamp-string-recv-time"
+}
+```
 
 A command will be issued with the following format: 
 
 {peerID:[CMD1, CMD2, …., CMD N] } 
 
-Currently, we only need individual commands, so we will only need to implement handling of a single argument in the array.  It should be possible to define a CMD as a JSON object, but the current implement will use the strings above.  The idea is that a peer initiates a CMD in the namespace of the desired PeerID. 
+Currently, we only need individual commands, so we will only need to implement handling of a single argument in the array.  It should be possible to define a CMD as a JSON object, but the current implement will use the strings above.  The idea is that a peer initiates a CMD in the namespace of the desired PeerID.
+
+Since this specification scope is limited to discovery, no effort is made to define commands to support use cases beyond discovery.  One can use the defined format above to create new command types.
 
   *3.2* __Infrastructure__
 
