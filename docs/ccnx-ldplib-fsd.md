@@ -65,7 +65,11 @@ Describe the scope of work
 
   - CCNx LDP Client : Any device or service using the CCNx Lightweight Discovery Protocol.
 
+  - CCNx LDP Namespace : Any URI that identifies the namespace used for discovery and registration.  Applications and Services should agree upon useful namespaces
+  
   - CCNx LDP Peer : Any network connected CCNx LDP Client.
+
+  - CCNx LDP Peer Group : Any CCNx LDP Peers registered under a particular namespace.
 
   - CCNx LDP Command Protocol : The protocol for allowing CCNx LDP Peers to send commands to each other. 
 
@@ -77,11 +81,11 @@ Describe the scope of work
 
   - CCNx LDP Remote Client : Remote designation indicates the CCNx LDP Client is operating on a remote network or operating on a different subnet 
 
-  - CCNx LDP Discovery Phase : The phase in which CCNx LDP Clients register their metadata and optionally finds CCNx LDP Peer to interact with  
+  - CCNx LDP Registration Phase : The phase in which CCNx LDP Clients registers its metadata in order to join a particular peer group namespace
+
+  - CCNx LDP Discovery Phase : The phase in which CCNx LDP Clients finds CCNx LDP Peer to interact with  
 
   - CCNx LDP Errors : All Errors that occur in the course of using CCNx LDP.  The errors are defined contain enough information to diagnose issues. 
-
-  - CCNx LDP Namespace : Any URI that identifies the namespace used for discovery and registration.  Applications and Services should agree upon useful namespaces
 
   *2.3* __Assumptions__
 
@@ -319,11 +323,34 @@ The way in which messages are passed back and forth between Peers is by writing 
 
 A command will be issued with the following format: 
 
-{peerID:[CMD1, CMD2, …., CMD N] } 
+{peer-id:[CMD1, CMD2, …., CMD N] } 
 
-Currently, we only need individual commands, so we will only need to implement handling of a single argument in the array.  It should be possible to define a CMD as a JSON object, but the current implement will use the strings above.  The idea is that a peer initiates a CMD in the namespace of the desired PeerID.
+Currently, we only need individual commands, so we will only need to implement handling of a single argument in the array.  It should be possible to define a CMD as a JSON object, but the current implement will use the strings above.  The idea is that a peer initiates a CMD in the namespace of the desired peer-id.
 
 Since this specification scope is limited to discovery, no effort is made to define commands to support use cases beyond discovery.  One can use the defined format above to create new command types.
+
+  *3.1.3* __Content Naming Scheme__
+
+In order to implement this design independent of the network hardware location, or transport, we will use a technique based around naming, where all participants in the network are named, all content is named, and all participants are verifiable based on the name and associated keys used to sign content. 
+
+We will organize the following hierarchy of naming: 
+
+-    DEFAULT_LDP_NAMESPACE “ccnx:/ldp.iotone.io” 
+
+-    DEFAULT_LDP_PEERGROUP “ccnx:/ldp.iotone.io/pg/default” 
+
+-    DEFAULT_LDP_PEERGROUP_PEERS “ccnx:/ldp.iotone.io/pg/default/peers” 
+
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s” 
+
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info” 
+
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
+
+
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD” 
+
+If we substitute the %s for a peer-id, we can start to see how data gets organized.  Every member of a Peer Group will have the above information defined in their Local Discovery Service. 
 
   *3.2* __Infrastructure__
 
