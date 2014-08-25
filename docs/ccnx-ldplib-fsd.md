@@ -187,9 +187,11 @@ Development and QA will be performed by the IoTone team.
 | **Feature** | **Description** | **ID** |
 | --- | --- | --- |
 | Peer Metadata Format | The Metadata is used by Clients to publish their information and find Peers | 3.1.1 |
-| Registration Phase | Each Peer must register to publish metadata | 3.1.2 |
-| Discovery Phase | Remote CCNx LDP Client has to discover Peers | 3.1.3 |
-| Error Messages | Errors are defined for all possible error conditions | 3.1.4 |
+| CMD Message Format | When CCNx LDP Commands are sent, there is a Request/Response format that will be used | 3.1.2 |
+| Content Naming Scheme  | Data exchanged between Peers will be organized under hierarchical naming schemes for CCNx LDP | 3.1.3 |
+| Registration Phase | Each Peer must register to publish metadata | 3.1.4 |
+| Discovery Phase | Remote CCNx LDP Client has to discover Peers | 3.1.5 |
+| Error Messages | Errors are defined for all possible error conditions | 3.1.6 |
 | | |
 
   *3.2* __Infrastructure__
