@@ -61,8 +61,6 @@ Services are deployed with the notion they should be available to devices or oth
 
   *2.2* __Definitions__
 
-Describe the scope of work
-
   - CCNx LDP Client : Any device or service using the CCNx Lightweight Discovery Protocol.
 
   - CCNx LDP Namespace : Any URI that identifies the namespace used for discovery and registration.  Applications and Services should agree upon useful namespaces
@@ -86,6 +84,12 @@ Describe the scope of work
   - CCNx LDP Discovery Phase : The phase in which CCNx LDP Clients finds CCNx LDP Peer to interact with  
 
   - CCNx LDP Errors : All Errors that occur in the course of using CCNx LDP.  The errors are defined contain enough information to diagnose issues. 
+
+  - CCNx LDP CMD Message: The way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace using a CMD Message
+
+  - CCNx LDP Correlation ID : Used in CMD Messages to uniquely identify related messages
+
+  - CCNx LDP Locator URI : Used in CMD Messages to offer an alternative way to address the remote peer id
 
   *2.3* __Assumptions__
 
@@ -298,13 +302,14 @@ Development and QA will be performed by the IoTone team.
 
   *3.1.2* __CMD Message Format__
 
-The way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace.  This should trigger a response by the peer, or the request will be ignored if the Peer is unavailable or otherwise Paired already with a different member of the Peer group.  The basic commands required for implementation: 
+A CMD Message defineds the way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace.  This should trigger a response by the peer, or the request will be ignored if the Peer is unavailable or otherwise Paired already with a different member of the Peer group.  The basic commands required for implementation: 
 
 
 - “PING” : A Peer can request a ping ack response
 
 ```
 "PING": {
+  "remote-peer-id": "a-remote-peer-id"
   "peer-id": "my-peer-id",
   "correlation-id": "my-correlation-id",
   "timestamp": "optional-timestamp-string-send-time"
@@ -315,9 +320,10 @@ The way in which messages are passed back and forth between Peers is by writing 
 
 ```
 "PING_ACK": {
-  "peer-id": "my-peer-id",
+  "peer-id": "a-remote-peer-id",
   "correlation-id": "my-correlation-id",
-  "timestamp": "optional-timestamp-string-recv-time"
+  "timestamp": "optional-timestamp-string-recv-time",
+  "locator-uri": "some-uri"
 }
 ```
 
