@@ -531,11 +531,11 @@ Bugs will be tracked in [Github Issues for this project](https://github.com/IoTo
 | **Summary** | **Description** | **Expected Result** | **ID** |
 | --- | --- | --- | --- |
 | Validate Peer Metadata | Peer Metadata should be valid | Conforms to definition in 3.1.1 | TC4.1.1 |
-| Parse CMD Format | All messages going in and out should be valid and parseable into component form, as described in 3.1.2 | TC4.1.2 |
-| Verify naming schema | All content should be defined using a common naming scheme, defined in 3.1.3 | TC4.1.3 |
-| Perform Registration Request | A client should be able to perform registration as defined in 3.1.4 | TC4.1.4 |
-| Perform a Discovery Request | A client should be able to perform discovery as defined in 3.1.5 | TC4.1.5 |
-| Errors are defined and thrown at right times | A client should get proper error reporting when error conditions occur | TC4.1.6 |
+| Parse CMD Format | All messages going in and out should be valid and parseable into component form, as described in 3.1.2 | Conforms to definition in 3.1.2 | TC4.1.2 |
+| Verify naming schema | All content should be defined using a common naming scheme, defined in 3.1.3 | Conforms to definition in 3.1.3 | TC4.1.3 |
+| Perform Registration Request | A client should be able to perform registration as defined in 3.1.4 | Conforms to definition in 3.1.4 | TC4.1.4 |
+| Perform a Discovery Request | A client should be able to perform discovery as defined in 3.1.5 | Conforms to definition in 3.1.5 | TC4.1.5 |
+| Errors are defined and thrown at right times | A client should get proper error reporting when error conditions occur | Conforms to definition in 3.1.6 | TC4.1.6 |
 
 
   *4.2* __Test Case Design__
