@@ -431,13 +431,29 @@ Once registered, a client is free to initiate a discovery request, in which they
 
   *3.1.6* __Error Messages__
 
-The following error message format is defined:
+The following error message format is defined below.  If an attribute called ldp_error is defined in a CMD response message, it will contain the following object value:
 
 ```
 {
-  
+  "ldp_errno": "Error number",
+  "ldp_msg": "Error message",
+  "ldp_rootcause": "Error root cause"
 }
 ```
+
+The errno is defined with known error codes:
+
+-  0  : No error, status ok
+- -1  : General error
+- -10 : Cannot reach local naming services
+- -11 : Malformed Request
+- -12 : Malformed Response
+- -13 : Unauthorized Access to namespace
+- -14 : Invalid credentials
+- -15 : Cryptographic error
+- -16 : Broken Pipe
+- -17 : Network Unreachable
+- -100 : Unknown error
 
   *3.2* __Infrastructure__
 
