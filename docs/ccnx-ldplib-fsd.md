@@ -362,19 +362,19 @@ In order to implement this design independent of the network hardware location, 
 
 We will organize the following hierarchy of naming: 
 
--    DEFAULT_LDP_NAMESPACE “ccnx:/ldp.iotone.io” 
+-    DEFAULT_ldp_NAMESPACE “ccnx:/ldp.iotone.io” 
 
--    DEFAULT_LDP_PEERGROUP “ccnx:/ldp.iotone.io/pg/default” 
+-    DEFAULT_ldp_PEERGROUP “ccnx:/ldp.iotone.io/pg/default” 
 
--    DEFAULT_LDP_PEERGROUP_PEERS “ccnx:/ldp.iotone.io/pg/default/peers” 
+-    DEFAULT_ldp_PEERGROUP_PEERS “ccnx:/ldp.iotone.io/pg/default/peers” 
 
--    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s” 
+-    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s” 
 
--    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info” 
+-    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info” 
 
--    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
+-    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
 
--    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD” 
+-    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD” 
 
 If we substitute the %s for a peer-id, we can start to see how data gets organized.  Every member of a Peer Group will have the above information defined in their Local Discovery Service. 
 
@@ -510,6 +510,29 @@ N/A
 
 The datamodel is fully defined in 3.1.1 and 3.1.2.
 
+  *3.12* __API__
+
+```
+typedef struct LDPSettings TLDPSettings;
+typedef struct LDPServiceHandle TLDPServiceHandle;
+TLDPSettings *ldp_settings_create(void);
+TLDPServiceHandle *ldp_service_handle_create(void);
+void ldp_settings_destroy(TLDPSettings **settings);
+void ldp_service_handle_destroy(TLDPServiceHandle **handle);
+int ldp_settings_init(TLDPSettings *settings);
+int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path);
+int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path);
+int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id);
+int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
+int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj, TLDPServiceHandle *handle);
+char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
+char ** ldp_get_peers(int *peer_names_length, char *access_control_obj, TLDPServiceHandle *handle);
+int ldp_send_cmd(char *remote_peer_id_common_name, char *cmd, char *access_control_obj, TLDPServiceHandle *handle);
+char* ldp_recv_cmd(char* peerid_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
+int ldp_register_listener(void *(*listener)(void*), void *arg);
+int ldp_unregister_listener(void *(*listener)(void*));
+```
+
 *4.0* __Software Quality__
 
 All software delivered for this project will undergo a Software Quality Engineering Testing Phase at each milestones deliverable. The goal of testing is to ensure delivery of code that meets required quality standards for this project at each phase.
@@ -546,11 +569,23 @@ Units will verify api conformance and correctness.
 
 System tests can be run to verify the functioning of the system.  Simulating two network peers will require either a remote trigger or a manual process execution.  For purposes of this project, manual testing will be used to validate system functionality.  Results will be published under the testresults directory.
 
-*5.0* __APPENDIX A - WORK PLAN AND DELIVERABLES SCHEDULE__
+*5.0* __Implementation__
+
+  *5.1* __Dependencies__
+
+- CCNx 0.8.0 API & Implementation
+- jsmn: http://zserge.bitbucket.org/jsmn.html
+- bstrlib (TBD)
+
+  *5.2* __Software__
+
+The API will exist as standalone headers, with a hidden private interface.  The code will exist as a portable library which can be included into 3rd party projects.
+
+*6.0* __APPENDIX A - WORK PLAN AND DELIVERABLES SCHEDULE__
 
 N/A - No need to do this.  It will all get done this week
 
-*6.0* __APPENDIX B - References__
+*7.0* __APPENDIX B - References__
 
 - [Apple Bonjour](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1): While addressing the same feature set as CCNx LDP, it does not address a number of key points.  There is no mention of security in the Bonjour protocol.  For example, one has no way to verify the authenticity of a service or host.  Malicious devices can easily get involved in MITM attacks and spoof a valid host or service.  There is no notion of access control. Any host can access any published service.  And due to the implementation, without special provisions at the router level, Bonjour is not designed to operate across subnets, limiting its usefulness for 'global' scale deployments.  There are a number of descriptions for how to use [DNS-sd](http://dns-sd.org), multicast-routing, or proxy-bonjour services.
 - [UPnP](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0.pdf): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
