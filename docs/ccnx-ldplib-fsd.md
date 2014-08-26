@@ -429,6 +429,16 @@ Once registered, a client is free to initiate a discovery request, in which they
 ```
 2: Diagram source: http://asciiflow.com/#0B2j69b0ryZjAbS1yZ0Zhc0x4dE0
 
+  *3.1.6* __Error Messages__
+
+The following error message format is defined:
+
+```
+{
+  
+}
+```
+
   *3.2* __Infrastructure__
 
 There is no support infrastructure required in this project.
