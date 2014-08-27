@@ -1,7 +1,7 @@
 Building
 ========
 
-export BASEDIR=/usr/lib (or set this to a location where you have installed CCNx)
+export INSTALL_BASE=/usr/lib (or set this to a location where you have installed CCNx)
 
 Info on how to run tests
 ========================
