@@ -19,7 +19,7 @@ GTEST_DIR = $(EXTERNAL_DIR)/gtest-1.6.0
 
 C_SRC_DIR = ..
 TEST_DIR = .
-INSTALL_BASE = $(EXTERNAL_DIR)/ccnx-0.7.2
+# INSTALL_BASE = $(EXTERNAL_DIR)/ccnx-0.8.0
 # XXX We should remove this boost stuff, don't use it
 # BOOST_INCLUDE = $(INSTALL_BASE)/include/boost
 # BOOST_LIBS = $(INSTALL_BASE)/lib/libboost_regex.a $(INSTALL_BASE)/lib/libboost_thread.a
