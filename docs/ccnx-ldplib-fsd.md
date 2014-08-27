@@ -59,6 +59,8 @@ In a typical deployment scenario, devices are operating in proximity to each oth
 
 Services are deployed with the notion they should be available to devices or other services.  For devices or services to communicate, they will typically need to find each other on the network.
 
+Devices and Services must first know how to introspect their own metadata, or the Application calling the CCNx LDP API must be responsible for writing out well formed metadata.  By publishing metadata, a device in effect, advertises its availability on a network under a particular namespace.  By using namespaces, a device has the possibility of assigning its membership to a particular federation group of Peers, independent of the network address.
+
   *2.2* __Definitions__
 
   - CCNx LDP Client : Any device or service using the CCNx Lightweight Discovery Protocol.
@@ -68,6 +70,8 @@ Services are deployed with the notion they should be available to devices or oth
   - CCNx LDP Peer : Any network connected CCNx LDP Client.
 
   - CCNx LDP Peer Group : Any CCNx LDP Peers registered under a particular namespace.
+
+  - CCNx LDP Peer Keystore : Every Peer should provide a keystore in order to ensure all requests can be verified.  A keystore is unnecessary if verification is off.
 
   - CCNx LDP Command Protocol : The protocol for allowing CCNx LDP Peers to send commands to each other. 
 
@@ -303,61 +307,11 @@ Note, 3.1.2 CMD Message has been stricken from the feature set, as there is no n
 }
 ```
 
-  *3.1.2* __~~CMD Message Format~~__
+  *3.1.2* __Access Control for Namespaces~~CMD Message Format~~__
 
-~~A CMD Message defineds the way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace.  This should trigger a response by the peer, or the request will be ignored if the Peer is unavailable or otherwise Paired already with a different member of the Peer group.  The basic commands required for implementation: 
+It is important to implement access control for namespaces.  For certain deployments or applications, the administrator will choose to implement access control groups on namespaces and on particular content.  Due to the complexity of the solution, it is up to each implementation of a CCNx LDP Discovery Service to provide access control.
 
-
-- “PING” : A Peer can request a ping ack response
-
-```
-"PING": {
-  "remote-peer-id": "a-remote-peer-id"
-  "peer-id": "my-peer-id",
-  "correlation-id": "my-correlation-id",
-  "timestamp": "optional-timestamp-string-send-time"
-}
-```
-
-- “PING_ACK” : A Peer responds to a ping with a ping ack
-
-```
-"PING_ACK": {
-  "peer-id": "a-remote-peer-id",
-  "correlation-id": "my-correlation-id",
-  "timestamp": "optional-timestamp-string-recv-time",
-  "locator-uri": "some-uri"
-}
-```
-
-A command will be issued with the following format: 
-
-{peer-id:[CMD1, CMD2, …., CMD N] } 
-
-Currently, we only need individual commands, so we will only need to implement handling of a single argument in the array.  It should be possible to define a CMD as a JSON object, but the current implement will use the strings above.  The idea is that a peer initiates a CMD in the namespace of the desired peer-id.
-
-Since this specification scope is limited to discovery, no effort is made to define commands to support use cases beyond discovery.  One can use the defined format above to create new command types.
-
-A Peer initiating a CMD request to one or more peers will require the remote Peers to be listening for incoming requests.  The simplest approach is to set up an event listener at each Peer, after completing the initial registration to join the default Peer Group.  This event loop, in pseudo-code, will do the following: 
-
-```
-While (keepProcessing) { 
-  nameToListenFor = “ccnx:/ldp.iotone.io/pg/default/peers/<MYPEERID>/CMD” 
-  waitForIncomingCMD(nameToListenFor, callbackHandler)) 
-} 
-
-callbackHandler(Data) { 
-  CMD = parseCMD(Data) 
-  processCMD(CMD) 
-
-  if (CMD requires UI Notification) { 
-    JNIcallbackToAndroidMessageQueue(CMD, Data); 
-
-  } 
-} 
-```
-
-A Peer should assume each Remote Peer will process incoming CMD messages immediately.  Deferred processing would result in possibility of a timeout for time sensitive requests.  It is possible a Remote Peer may decide it will discard requests if they have expired or are irrelevant.  A Remote Peer should send a response message if necessary.~~
+In reality, the implementation of the solution relies upon a CCNd running, which will honor Access Control Markers within a Content Object.  Therefore, the scope of implementation of Access Control Groups falls outside this specification.  It is noted here simply to inform the implementer that the APIs must report Access Control errors.  The first implementation of this specification will require handling Access Control configuration in a manner that is to be determined.  Peer Keys must be utilized in the configuration process, which is also not part of tihs specification.  For further details, review the section on Access Control Groups in the Appendix B.
 
   *3.1.3* __Content Naming Scheme__
 
@@ -517,11 +471,8 @@ The datamodel is fully defined in 3.1.1 and 3.1.2.
 
 ```
 typedef struct LDPSettings TLDPSettings;
-typedef struct LDPServiceHandle TLDPServiceHandle;
 TLDPSettings *ldp_settings_create(void);
-TLDPServiceHandle *ldp_service_handle_create(void);
 void ldp_settings_destroy(TLDPSettings **settings);
-void ldp_service_handle_destroy(TLDPServiceHandle **handle);
 int ldp_settings_init(TLDPSettings *settings);
 int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path);
 int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path);
@@ -530,10 +481,6 @@ int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
 int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj, TLDPServiceHandle *handle);
 char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
 char ** ldp_get_peers(int *peer_names_length, char *access_control_obj, TLDPServiceHandle *handle);
-~~int ldp_send_cmd(char *remote_peer_id_common_name, char *cmd, char *access_control_obj, TLDPServiceHandle *handle);~~
-~~char* ldp_recv_cmd(char* peerid_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);~~
-int ldp_register_listener(void *(*listener)(void*), void *arg);
-int ldp_unregister_listener(void *(*listener)(void*));
 ```
 
 *4.0* __Software Quality__
