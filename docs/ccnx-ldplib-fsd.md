@@ -85,11 +85,11 @@ Services are deployed with the notion they should be available to devices or oth
 
   - CCNx LDP Errors : All Errors that occur in the course of using CCNx LDP.  The errors are defined contain enough information to diagnose issues. 
 
-  - CCNx LDP CMD Message: The way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace using a CMD Message
+  - ~~CCNx LDP CMD Message: The way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace using a CMD Message~~
 
-  - CCNx LDP Correlation ID : Used in CMD Messages to uniquely identify related messages
+  - ~~CCNx LDP Correlation ID : Used in CMD Messages to uniquely identify related messages~~
 
-  - CCNx LDP Locator URI : Used in CMD Messages to offer an alternative way to address the remote peer id
+  - ~~CCNx LDP Locator URI : Used in CMD Messages to offer an alternative way to address the remote peer id~~
 
   *2.3* __Assumptions__
 
@@ -195,12 +195,15 @@ Development and QA will be performed by the IoTone team.
 | **Feature** | **Description** | **ID** |
 | --- | --- | --- |
 | Peer Metadata Format | The Metadata is used by Clients to publish their information and find Peers | 3.1.1 |
-| CMD Message Format | When CCNx LDP Commands are sent, there is a Request/Response format that will be used | 3.1.2 |
+| ~~CMD Message Format~~ | ~~When CCNx LDP Commands are sent, there is a Request/Response format that will be used~~ | ~~3.1.2~~ |
+| Access Control for Namespaces| Namespaces can be  | 3.1.2 |
 | Content Naming Scheme  | Data exchanged between Peers will be organized under hierarchical naming schemes for CCNx LDP | 3.1.3 |
 | Registration Phase | Each Peer must register to publish metadata | 3.1.4 |
 | Discovery Phase | Remote CCNx LDP Client has to discover Peers | 3.1.5 |
 | Error Messages | Errors are defined for all possible error conditions | 3.1.6 |
 | | |
+
+Note, 3.1.2 CMD Message has been stricken from the feature set, as there is no need to support CMD Messages in the spec.  It will be replaces with an access control feature.
 
   *3.1.1* __Peer Metadata Format__
 
@@ -300,9 +303,9 @@ Development and QA will be performed by the IoTone team.
 }
 ```
 
-  *3.1.2* __CMD Message Format__
+  *3.1.2* __~~CMD Message Format~~__
 
-A CMD Message defineds the way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace.  This should trigger a response by the peer, or the request will be ignored if the Peer is unavailable or otherwise Paired already with a different member of the Peer group.  The basic commands required for implementation: 
+~~A CMD Message defineds the way in which messages are passed back and forth between Peers is by writing to the Peer’s namespace.  This should trigger a response by the peer, or the request will be ignored if the Peer is unavailable or otherwise Paired already with a different member of the Peer group.  The basic commands required for implementation: 
 
 
 - “PING” : A Peer can request a ping ack response
@@ -354,7 +357,7 @@ callbackHandler(Data) {
 } 
 ```
 
-A Peer should assume each Remote Peer will process incoming CMD messages immediately.  Deferred processing would result in possibility of a timeout for time sensitive requests.  It is possible a Remote Peer may decide it will discard requests if they have expired or are irrelevant.  A Remote Peer should send a response message if necessary.
+A Peer should assume each Remote Peer will process incoming CMD messages immediately.  Deferred processing would result in possibility of a timeout for time sensitive requests.  It is possible a Remote Peer may decide it will discard requests if they have expired or are irrelevant.  A Remote Peer should send a response message if necessary.~~
 
   *3.1.3* __Content Naming Scheme__
 
@@ -374,7 +377,7 @@ We will organize the following hierarchy of naming:
 
 -    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
 
--    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD” 
+-    ~~DEFAULT_ldp_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD”~~
 
 If we substitute the %s for a peer-id, we can start to see how data gets organized.  Every member of a Peer Group will have the above information defined in their Local Discovery Service. 
 
@@ -437,7 +440,7 @@ Once registered, a client is free to initiate a discovery request, in which they
 
   *3.1.6* __Error Messages__
 
-The following error message format is defined below.  If an attribute called ldp_error is defined in a CMD response message, it will contain the following object value:
+The following error message format is defined below.  If an attribute called ldp_error is defined in a response message ~~CMD response message~~, it will contain the following object value:
 
 ```
 {
@@ -527,8 +530,8 @@ int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
 int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj, TLDPServiceHandle *handle);
 char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
 char ** ldp_get_peers(int *peer_names_length, char *access_control_obj, TLDPServiceHandle *handle);
-int ldp_send_cmd(char *remote_peer_id_common_name, char *cmd, char *access_control_obj, TLDPServiceHandle *handle);
-char* ldp_recv_cmd(char* peerid_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
+~~int ldp_send_cmd(char *remote_peer_id_common_name, char *cmd, char *access_control_obj, TLDPServiceHandle *handle);~~
+~~char* ldp_recv_cmd(char* peerid_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);~~
 int ldp_register_listener(void *(*listener)(void*), void *arg);
 int ldp_unregister_listener(void *(*listener)(void*));
 ```
@@ -554,7 +557,7 @@ Bugs will be tracked in [Github Issues for this project](https://github.com/IoTo
 | **Summary** | **Description** | **Expected Result** | **ID** |
 | --- | --- | --- | --- |
 | Validate Peer Metadata | Peer Metadata should be valid | Conforms to definition in 3.1.1 | TC4.1.1 |
-| Parse CMD Format | All messages going in and out should be valid and parseable into component form, as described in 3.1.2 | Conforms to definition in 3.1.2 | TC4.1.2 |
+| ~~Parse CMD Format~~ | ~~All messages going in and out should be valid and parseable into component form, as described in 3.1.2~~ | ~~Conforms to definition in 3.1.2~~ | ~~TC4.1.2~~ |
 | Verify naming schema | All content should be defined using a common naming scheme, defined in 3.1.3 | Conforms to definition in 3.1.3 | TC4.1.3 |
 | Perform Registration Request | A client should be able to perform registration as defined in 3.1.4 | Conforms to definition in 3.1.4 | TC4.1.4 |
 | Perform a Discovery Request | A client should be able to perform discovery as defined in 3.1.5 | Conforms to definition in 3.1.5 | TC4.1.5 |
@@ -589,3 +592,4 @@ N/A - No need to do this.  It will all get done this week
 
 - [Apple Bonjour](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1): While addressing the same feature set as CCNx LDP, it does not address a number of key points.  There is no mention of security in the Bonjour protocol.  For example, one has no way to verify the authenticity of a service or host.  Malicious devices can easily get involved in MITM attacks and spoof a valid host or service.  There is no notion of access control. Any host can access any published service.  And due to the implementation, without special provisions at the router level, Bonjour is not designed to operate across subnets, limiting its usefulness for 'global' scale deployments.  There are a number of descriptions for how to use [DNS-sd](http://dns-sd.org), multicast-routing, or proxy-bonjour services.
 - [UPnP](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0.pdf): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
+- [CCNx Access Control Specification 2010](https://github.com/RazortoothRTC/ccnx/blob/26-forward-port-v0.7.2-release-to-0.8.0/doc/specs/AccessControl/AccessControlSpecs01.pdf?raw=true) : The specification explains how access control groups work and are to be implemented.
