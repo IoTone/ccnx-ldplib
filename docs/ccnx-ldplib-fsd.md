@@ -319,19 +319,19 @@ In order to implement this design independent of the network hardware location, 
 
 We will organize the following hierarchy of naming: 
 
--    DEFAULT_ldp_NAMESPACE “ccnx:/ldp.iotone.io” 
+-    DEFAULT_LDP_NAMESPACE “ccnx:/ldp.iotone.io” 
 
--    DEFAULT_ldp_PEERGROUP “ccnx:/ldp.iotone.io/pg/default” 
+-    DEFAULT_LDP_PEERGROUP “ccnx:/ldp.iotone.io/pg/default” 
 
--    DEFAULT_ldp_PEERGROUP_PEERS “ccnx:/ldp.iotone.io/pg/default/peers” 
+-    DEFAULT_LDP_PEERGROUP_PEERS “ccnx:/ldp.iotone.io/pg/default/peers” 
 
--    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s” 
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s” 
 
--    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info” 
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info” 
 
--    DEFAULT_ldp_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
+-    DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1.0.0  “ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0” 
 
--    ~~DEFAULT_ldp_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD”~~
+-    ~~DEFAULT_LDP_PEERGROUP_PEERS_PEERID_CMD_PREFIX  “ccnx:/ldp.iotone.io/pg/default/peers/%s/CMD”~~
 
 If we substitute the %s for a peer-id, we can start to see how data gets organized.  Every member of a Peer Group will have the above information defined in their Local Discovery Service. 
 

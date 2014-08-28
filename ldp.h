@@ -1,3 +1,5 @@
+#ifndef __ldp_h__
+#define __ldp_h__
 /**
 #
 #Copyright (c) 2014 IoTone, Inc. All rights reserved.
@@ -27,3 +29,57 @@
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
+
+#ifndef __ldp_private_h__
+    #include "ldp_private.h"
+#endif
+
+/*
+ * Defs
+ */
+#define DEFAULT_LDP_NAMESPACE "ccnx:/ldp.iotone.io"
+#define DEFAULT_LDP_PEERGROUP "ccnx:/ldp.iotone.io/pg/default"
+#define DEFAULT_LDP_PEERGROUP_PEERS "ccnx:/ldp.iotone.io/pg/default/peers"
+#define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_PREFIX  "ccnx:/ldp.iotone.io/pg/default/peers/%s"
+#define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  "ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info"
+#define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
+#define DEFAULT_LDP_NAMESPACE_ROUTE "add ccnx:/ldp.iotone.io udp 224.0.23.170 59695 3 16"
+#define DEFAULT_LDP_USER_KEYS_ROUTE "add ccnx:/ccnx.org/Users udp 224.0.23.170 59695 3 16"
+#define LDP_API_VERSION "0.9.0.1"
+
+/*
+ * API signatures
+ */
+
+TLDPSettings *ldp_settings_create(void);
+void ldp_settings_destroy(TLDPSettings **settings);
+int ldp_settings_init(TLDPSettings *settings);
+
+/*
+
+int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path);
+int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path);
+int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id);
+int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
+int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj, TLDPServiceHandle *handle);
+char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
+char ** ldp_get_peers(int *peer_names_length, char *access_control_obj, TLDPServiceHandle *handle);
+*/
+
+/*
+ * UTILITY Methods
+ */
+void (*LDPLOG)(int, const char *, ...);
+int (*LDPLOG_setmask)(int);
+int ldp_log_console_setlogmask(int mask);
+void ldp_log_console(int priority, const char *format, ...);
+#ifdef __ANDROID__
+void ldp_log_to_android_logcat(int priority, const char *format, ...);
+#endif
+
+/*
+ 	Globals - should really be in private
+ */
+
+#define TAG "ldplib"
+#endif
