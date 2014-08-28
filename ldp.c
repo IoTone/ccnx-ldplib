@@ -468,11 +468,10 @@ char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *
 
 	sprintf(uri, DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0, strdup(remote_peer_id_common_name));
   
-	bytes = ldp_private_ccnsip_data(uri, NULL, LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT, DEFAULT_LDP_SCOPE, data_len);
+	bytes = ldp_private_ccnsip_data(uri, LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT, DEFAULT_LDP_SCOPE, data_len);
   	
 	return bytes;
 }
-
 
 int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path) {
 	if ((settings == NULL) || (path == NULL)) {
@@ -909,6 +908,125 @@ double ldp_private_get_fs_mb_available(char * path) {
 	LDPLOG(LOG_DEBUG, "f_frsize = %ld, f_bfree = %ld, MB=%d, total bytes: %ld", free_size, blocks_free, MB, (free_size * blocks_free));
 	LDPLOG(LOG_DEBUG, "MBytes available on path %s: %ld", path, (free_size * blocks_free)/MB);
 	return (free_size * blocks_free)/MB; // Should we apply ceil?
+}
+
+/* ccnsip the data (get it), won't block on data, loosely based on ccnpeek */
+char *ldp_private_ccnsip_data(char *content_name_uri, long timeout_in_millis, int scope, size_t *data_length) {
+	struct ccn_charbuf *content_name = NULL;;
+	struct ccn_charbuf *tpl = NULL;;
+	struct ccn *h = NULL;
+	int res;
+	size_t length;
+    struct ccn_charbuf *resultbuf = NULL;
+    struct ccn_parsed_ContentObject pcobuf = { 0 };
+
+    int allow_stale = 0; // We won't allow stale data
+    int content_only = 1; // Only get the content, not the ccnb
+    // We may want to default scope to -1
+    // scope = -1;
+    scope = -1;
+    const unsigned char *ptr = NULL;
+    int resolve_version = 1; // Activate version resolution
+	 
+    const unsigned lifetime_default = CCN_INTEREST_LIFETIME_SEC << 12;
+    unsigned lifetime_l12 = lifetime_default;
+    int get_flags = 0;
+	content_name = ccn_charbuf_create();
+
+	if (resolve_version == 0)
+		resolve_version = CCN_V_HIGHEST;
+	else
+		resolve_version = CCN_V_HIGH;
+	if (content_name == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnsip_data() can't create ccn_charbuf_create()");
+		return NULL;
+	}
+
+	if (content_name_uri == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnsip_data() content_name_uri is NULL");
+		return NULL;
+	}
+
+    res = ccn_name_from_uri(content_name, content_name_uri);
+
+    if (res < 0) {
+        LDPLOG(LOG_ERR, "ldp_private_ccnsip_data() bad ccn URI: %s\n", content_name_uri);
+        return NULL;
+    }
+
+    h = ccn_create();
+    res = ccn_connect(h, ldp_private_connection_name);
+    if (res < 0) {
+        LDPLOG(LOG_ERR, "ldp_private_ccnsip_data() error connecting to CCND, is it running?");
+        return NULL;
+    }
+
+    LDPLOG(LOG_DEBUG, "ldp_private_ccnsip_data() timeout_in_millis = %d", timeout_in_millis);
+
+    //
+    // We won't need this, leave it in case we tweak scope
+    //
+	if (allow_stale || lifetime_l12 != lifetime_default || scope != -1) {
+        tpl = ccn_charbuf_create();
+        ccn_charbuf_append_tt(tpl, CCN_DTAG_Interest, CCN_DTAG);
+        ccn_charbuf_append_tt(tpl, CCN_DTAG_Name, CCN_DTAG);
+        ccn_charbuf_append_closer(tpl); /* </Name> */
+		if (allow_stale) {
+			ccn_charbuf_append_tt(tpl, CCN_DTAG_AnswerOriginKind, CCN_DTAG);
+			ccnb_append_number(tpl, CCN_AOK_DEFAULT | CCN_AOK_STALE);
+			ccn_charbuf_append_closer(tpl); /* </AnswerOriginKind> */
+		}
+        if (scope != -1) {
+            ccnb_tagged_putf(tpl, CCN_DTAG_Scope, "%d", scope);
+        }
+		if (lifetime_l12 != lifetime_default) {
+			/*
+			 * Choose the interest lifetime so there are at least 3
+			 * expressions (in the unsatisfied case).
+			 */
+			unsigned char buf[3] = { 0 };
+			int i;
+			for (i = sizeof(buf) - 1; i >= 0; i--, lifetime_l12 >>= 8)
+				buf[i] = lifetime_l12 & 0xff;
+			ccnb_append_tagged_blob(tpl, CCN_DTAG_InterestLifetime, buf, sizeof(buf));
+		}
+        ccn_charbuf_append_closer(tpl); /* </Interest> */
+    }
+    resultbuf = ccn_charbuf_create();
+    if (resolve_version != 0) {
+        res = ccn_resolve_version(h, content_name, resolve_version, 500);
+        if (res >= 0) {
+            ccn_uri_append(resultbuf, content_name->buf, content_name->length, 1);
+            LDPLOG(LOG_DEBUG, "version== %s\n", ccn_charbuf_as_string(resultbuf));
+            resultbuf->length = 0;
+        }
+    }
+    res = ccn_get(h, content_name, tpl, timeout_in_millis, resultbuf, &pcobuf, NULL, get_flags);
+    if (res >= 0) {
+        ptr = resultbuf->buf;
+        length = resultbuf->length;
+        if (content_only)
+            ccn_content_get_value(ptr, length, &pcobuf, &ptr, &length);
+        /* if (data_length > 0) {
+            res = fwrite(ptr, length, 1, stdout) - 1;
+        } */
+        if (length <= 0) {
+        	LDPLOG(LOG_ERR, "ldp_private_ccnsip_data() read ZERO data");
+        	length = 0;
+        	ptr = NULL;
+        } else {
+        	LDPLOG(LOG_DEBUG, "ldp_private_ccnsip_data() read %d", length);
+        }
+    } else {
+    	LDPLOG(LOG_ERR, "ldp_private_ccnsip_data() no results");
+    }
+    *data_length = length;
+    ccn_charbuf_destroy(&resultbuf);
+    ccn_charbuf_destroy(&tpl);
+    ccn_charbuf_destroy(&content_name);
+    ccn_destroy(&h);
+
+    return ptr;
 }
 
 // Technique applied from ccnseqwriter

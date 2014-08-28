@@ -75,6 +75,7 @@ char *ldp_private_create_str(const char *constr);
 char *ldp_private_strcat(char *s1, char *s2);
 int ldp_private_ccnush_data(struct ccn_charbuf *content_name, char *data, unsigned long data_length, long timeout_in_millis, int scope);
 int ldp_private_ccnush_data_with_freshness(struct ccn_charbuf *content_name, char *data, unsigned long data_length, long timeout_in_millis, int scope, int freshness_in_sec, int use_repo);
+char *ldp_private_ccnsip_data(char *content_name_uri, long timeout_in_millis, int scope, size_t *data_length);
 struct ccn_charbuf *ldp_private_startwrite_tpl(int scope);
 struct ccn_charbuf *ldp_private_interest_tpl(int allow_stale, int scope);
 //
