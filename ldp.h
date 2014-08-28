@@ -59,12 +59,12 @@ int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path);
 int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id);
 int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
 int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj);
-
+char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
 /*
 
 
 
-char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj, TLDPServiceHandle *handle);
+
 char ** ldp_get_peers(int *peer_names_length, char *access_control_obj, TLDPServiceHandle *handle);
 */
 

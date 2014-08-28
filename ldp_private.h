@@ -95,7 +95,6 @@ struct ccn_charbuf *ldp_private_interest_tpl(int allow_stale, int scope);
 #define LDP_CONTENT_FRESHNESS_IN_SEC_DEFAULT 600
 // XXX Change this back to 4 seconds when the event loop firing is fixed
 #define LDP_CMD_FRESHNESS_IN_SEC_DEFAULT 3
-// XXX Is this one even used????
 #define LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT 1000
 
 /* Forward Declarations */

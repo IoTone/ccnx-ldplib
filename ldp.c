@@ -451,6 +451,28 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
  	return status;
 } /* Write metadata from buffer */
 
+char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_len, char *access_control_obj) {
+	int status = 0;
+	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_bytes() begin");
+	char* bytes = NULL;
+	char uri[128];
+
+	if (remote_peer_id_common_name == NULL) {
+		LDPLOG(LOG_ERR, "ldp_get_peer_metadata_as_bytes() ERROR NULL content_name passed");
+		status = -1;
+	}
+
+	if (access_control_obj == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_bytes() NULL access_control_obj passed to , ignore");
+	}
+
+	sprintf(uri, DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0, strdup(remote_peer_id_common_name));
+  
+	bytes = ldp_private_ccnsip_data(uri, NULL, LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT, DEFAULT_LDP_SCOPE, data_len);
+  	
+	return bytes;
+}
+
 
 int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path) {
 	if ((settings == NULL) || (path == NULL)) {
