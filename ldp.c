@@ -516,3 +516,39 @@ double ldp_private_get_fs_mb_available(char * path) {
 	LDPLOG(LOG_DEBUG, "MBytes available on path %s: %ld", path, (free_size * blocks_free)/MB);
 	return (free_size * blocks_free)/MB; // Should we apply ceil?
 }
+
+int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path) {
+	if ((settings == NULL) || (path == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->sys_fs_path = strdup(path);
+  	return 0;
+}
+
+int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path) {
+	if ((settings == NULL) || (path == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_sys_logfile() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->sys_logfile = strdup(path);
+  	return 0;
+}
+
+int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id) {
+	if ((settings == NULL) || (user_id == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->user_id = strdup(user_id); // XXX This doesn't make sense?  Why do this?  Should be user_id
+  	return 0;
+}
+
+int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri) {
+	if ((settings == NULL) || (keystore_uri == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_keystore_uri() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->keystore_uri = strdup(keystore_uri);
+  	return 0;	
+}
