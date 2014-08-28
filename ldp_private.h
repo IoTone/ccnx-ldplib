@@ -73,7 +73,10 @@ char *ldp_private_generate_name(uint seed, int length);
 double ldp_private_get_fs_mb_available(char * path);
 char *ldp_private_create_str(const char *constr);
 char *ldp_private_strcat(char *s1, char *s2);
-
+int ldp_private_ccnush_data(struct ccn_charbuf *content_name, char *data, unsigned long data_length, long timeout_in_millis, int scope);
+int ldp_private_ccnush_data_with_freshness(struct ccn_charbuf *content_name, char *data, unsigned long data_length, long timeout_in_millis, int scope, int freshness_in_sec, int use_repo);
+struct ccn_charbuf *ldp_private_startwrite_tpl(int scope);
+struct ccn_charbuf *ldp_private_interest_tpl(int allow_stale, int scope);
 //
 //
 //
@@ -86,6 +89,14 @@ char *ldp_private_strcat(char *s1, char *s2);
 // This is relative path
 #define ANDROID_CCNX_USER_DIR_DEFAULT_SUFFIX "/ccnx/user"
 #define DEFAULT_LOG_DIR "/tmp/ldp.log"
+
+#define DEFAULT_LDP_SCOPE 3
+// Once things are stable, make this freshness as low as possible, say 5 minutes
+#define LDP_CONTENT_FRESHNESS_IN_SEC_DEFAULT 600
+// XXX Change this back to 4 seconds when the event loop firing is fixed
+#define LDP_CMD_FRESHNESS_IN_SEC_DEFAULT 3
+// XXX Is this one even used????
+#define LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT 1000
 
 /* Forward Declarations */
 struct LDPSettings;

@@ -378,7 +378,7 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
 
 	if (ccn_prefix == NULL) {
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ccn_prefix passed to ldp_write_peer_metadata_from_bytes()");
-		ccn_prefix = strdup(LDP_DEFAULT_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+		ccn_prefix = strdup(DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
 	}
 
 	if (access_control_obj == NULL) {
@@ -424,7 +424,7 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() to name uri = %s", uri);
 
 		if (ccn_name_from_uri(content_uri, uri) <= 0) {
-			LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() failed to create ccn_name_from_uri for %s%s", LDP_DEFAULT_PEERGROUP_PEERS, peer_id_common_name);
+			LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() failed to create ccn_name_from_uri for %s%s", DEFAULT_LDP_PEERGROUP_PEERS, peer_id_common_name);
 			status = -1;
 		} else {
 			// LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() created ccn_name_from_uri() content_name = %s, ret=%d", ccn_charbuf_as_string(content_uri), ret);
@@ -432,7 +432,7 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
 				status = -1;
 			} */
 			
-			if (ldp_private_ccnush_data_with_freshness(content_uri, metadata, metadata_bytes_length, 60000L, LDP_DEFAULT_SCOPE, ldp_CONTENT_FRESHNESS_IN_SEC_DEFAULT, FALSE) < 0) {
+			if (ldp_private_ccnush_data_with_freshness(content_uri, metadata, metadata_bytes_length, 60000L, DEFAULT_LDP_SCOPE, LDP_CONTENT_FRESHNESS_IN_SEC_DEFAULT, FALSE) < 0) {
 				status = -1;
 			}
 
@@ -451,6 +451,42 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
  	return status;
 } /* Write metadata from buffer */
 
+
+int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path) {
+	if ((settings == NULL) || (path == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->sys_fs_path = strdup(path);
+  	return 0;
+}
+
+int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path) {
+	if ((settings == NULL) || (path == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_sys_logfile() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->sys_logfile = strdup(path);
+  	return 0;
+}
+
+int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id) {
+	if ((settings == NULL) || (user_id == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->user_id = strdup(user_id); // XXX This doesn't make sense?  Why do this?  Should be user_id
+  	return 0;
+}
+
+int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri) {
+	if ((settings == NULL) || (keystore_uri == NULL)) {
+		LDPLOG(LOG_ERR, "ldp_settings_set_keystore_uri() TLDPSettings are NULL");
+		return -1;
+	}
+	settings->keystore_uri = strdup(keystore_uri);
+  	return 0;	
+}
 
 /*
  * Utility Methods
@@ -588,6 +624,244 @@ char *ldp_private_generate_name(uint seed, int length) {
 }
 
 
+int ldp_private_ccnush_data(struct ccn_charbuf *cname, char *data, unsigned long data_length, long timeout_in_millis, int scope) {
+	//
+	// Default to no staleness for this method
+	//
+	return ldp_private_ccnush_data_with_freshness(cname, data, data_length, timeout_in_millis, scope, -1, TRUE);
+}
+
+int ldp_private_ccnush_data_with_freshness(struct ccn_charbuf *cname, char *data, unsigned long data_length, long timeout_in_millis, int scope, int freshness_in_sec, int use_repo) {
+// ccnush (push) content to repo
+	int blocksize = SEQWRITER_BLOCKSIZE_DEFAULT; // TODO: presumably we want the 
+												 // blocksize to be configurable,
+												 // or even adaptive based on some other factors
+						  						 // seqwriter uses 4096 as default, btw
+	int breakloop = 0;
+	int ret;
+	int res;
+	int i;
+	int status = 0;
+	int useslow = 1; // Forces to use our old loop
+
+	struct ccn_seqwriter *seqw;
+	ssize_t read_res;
+	size_t blockread;
+	unsigned char *buf = NULL;
+	struct ccn_charbuf *tpl = {0};
+	struct ccn_charbuf *name_v;
+	struct ccn *h = NULL;
+	// XXX May want to remove this, I don't think we'll need it
+	// unsigned long expected_write = data_length;
+	unsigned long seqw_data_written = 0;
+
+	if (data == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() data is NULL");
+		return -1;
+	}
+
+	if (data_length <=0) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() data_length is zero or less, return");
+		return -1;
+	}
+
+	if (cname == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() cname is NULL, return");
+		return -1;
+	}
+
+	if ((h = ccn_create()) == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() ccn_create() is NULL");
+		return -1;
+	}
+
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() about to call ccn_connect()");
+	if ((ccn_connect(h, ldp_private_connection_name)) < 0) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() ccn_connect() failed");
+		ccn_destroy(&h);
+		return -1;
+	}
+
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() about to call ccn_seqw_create()");
+	// We should probably be checking to see if we have a handle before we do this
+	seqw = ccn_seqw_create(h, cname);
+
+	if (seqw == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() can't create ccn_seqwriter_create() for uri: %s", ccn_charbuf_as_string(cname));
+		return -1;
+	}
+	
+	// Get the Start Write Seq
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() about to call ccn_seqw_set_block_limits()");
+	ccn_seqw_set_block_limits(seqw, blocksize, blocksize);
+
+	if (freshness_in_sec > -1) {
+		LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() setting freshness expiry to %d sec", freshness_in_sec);
+        ccn_seqw_set_freshness(seqw, freshness_in_sec);
+    }
+	
+	// use_repo = TRUE;
+	// Only write to repo if instructed
+	if (use_repo) {
+		if ((name_v = ccn_charbuf_create()) == NULL) {
+			LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() can't create ccn_charbuf_create()");
+			return -1;
+		}
+		ccn_seqw_get_name(seqw, name_v);
+		ccn_name_from_uri(name_v, "%C1.R.sw");
+		ccn_name_append_nonce(name_v);
+		LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() calling ldp_private_startwrite_tpl()");
+		tpl = ldp_private_startwrite_tpl(scope);
+		LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() about to call ccn_get()");
+		ret = ccn_get(h, name_v, tpl, timeout_in_millis, NULL, NULL, NULL, 0);
+	 	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() about to call ccn_charbuf_destroy(&tpl)");
+	 	ccn_charbuf_destroy(&tpl);
+	 	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() about to call ccn_charbuf_destroy(&name_v)");
+		ccn_charbuf_destroy(&name_v);
+		if (ret < 0) {
+			LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() unable to ccn_get() the Start Write Sequence");
+			return -1;
+		}
+	}
+
+	// attribution: Borrow this loop from ccnseqwriter, modify to use data we already have buffered
+	blockread = 0;
+	buf = calloc(1, blocksize);
+	if (buf == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() unable to calloc()");
+		return -1;
+	}
+
+	if (useslow) {
+		LDPLOG(LOG_DEBUG, "Using slow loop");
+		for (i = 0; breakloop != 1;i++) {
+			read_res = 0; // This is a magic replacement for the read() sys call
+			while (blockread < blocksize) {
+				if (ccn_run(h, 1) < 0) {
+					// XXX We have a problem
+					LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() can't connect to ccnd");
+					return -1; // XXX We should cleanup first
+				}
+				// This is a magic replacement for the read() sys call
+				if (data_length > blocksize) {
+					blockread = blocksize;
+					read_res = blockread;
+				} else {
+					blockread = blocksize;
+					read_res = data_length;
+				}
+				
+				data_length = data_length - read_res;
+				memmove(buf, data, read_res);
+				data = data + read_res;
+				// End - magic replacement for the read() sys call
+				LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() data length = %d", data_length);
+				// read_res = read(0, buf + blockread, blocksize - blockread);
+			}
+			// LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() read_res = %d", read_res);
+			if (read_res == 0) {
+				LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() has no more to read");
+				breakloop = 1;
+			} else if (read_res < 0)  {
+				LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() error reading sequence");
+				status = -1;
+				breakloop = 1;
+			} else {
+				// LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() calling ccn_seqw_write() = %d bytes", blockread);
+				ret = ccn_seqw_write(seqw, buf, blockread);
+				while (ret == -1) {
+					if (ccn_run(h, 100) < 0) { // Delay while we wait for data?
+						LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() can't connect to ccnd");
+					}  
+					ret = ccn_seqw_write(seqw, buf, blockread);
+				}
+				if (ret != blockread) {
+					// Don't do abort()
+					LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() catastrophic error reading sequence");
+					status = -1;
+					breakloop = 1;
+				}
+				seqw_data_written += ret;
+				blockread = 0;
+			}
+			// We'll drop out here if breakloop == 1
+		}
+		LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() run loop wrote %d", seqw_data_written);
+	} else {
+		// XXX This is the original loop, but is set up to read from stdin
+		for (i = 0;; i++) {
+	        while (blockread < blocksize) {
+	            if (ccn_run(h, 1) < 0) {
+	                LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() Lost connection to ccnd: %s\n", strerror(ccn_geterror(h)));
+	                return -1;
+	            }
+	            read_res = read(0, buf + blockread, blocksize - blockread);
+	            if (read_res == 0)
+	                goto cleanup;
+	            if (read_res < 0) {
+	                // perror("read");
+	                status = 1;
+	                goto cleanup;
+	            }
+	            blockread += read_res;
+	        }
+	        res = ccn_seqw_write(seqw, buf, blockread);
+	        while (res == -1) {
+	            if (ccn_run(h, 100) < 0) {
+	                LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() Lost connection to ccnd: %s\n", strerror(ccn_geterror(h)));
+	                return -1;
+	            }
+	            res = ccn_seqw_write(seqw, buf, blockread);
+	        }
+	        if (res != blockread) {
+	        	LDPLOG(LOG_ERR, "ldp_private_ccnush_data_with_freshness() ccn_seqw_write did a short write or something");
+	        	return -1;
+	            // abort(); /* hmm, ccn_seqw_write did a short write or something */
+	        }
+	        blockread = 0;
+	    }
+	    
+	cleanup:
+	    // flush out any remaining data and close
+	    if (blockread > 0) {
+	        res = ccn_seqw_write(seqw, buf, blockread);
+	        while (res == -1) {
+	            if (ccn_run(h, 100) < 0) {
+	                LDPLOG(LOG_ERR, "Lost connection to ccnd: %s\n", strerror(ccn_geterror(h)));
+	                return -1;
+	            }
+	            res = ccn_seqw_write(seqw, buf, blockread);
+	        }
+	    }
+	}
+
+	// Using this as a safeguard to check whether we wrote enough data or too much
+	// XXX Should we remove this?
+	/* if (expected_write != seqw_data_written) {
+		status = -1;
+	} */
+	// Cleanup
+	// Flush remaining data
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() calling ccn_seqw_close()");
+	ccn_seqw_close(seqw);
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() run for a second");
+	ccn_run(h, 1);
+	if (tpl != NULL) {
+		ccn_charbuf_destroy(&tpl);
+	}
+
+	if (buf != NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() free(buf)");
+		free(buf);
+	}
+	buf = NULL;
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() ccn_disconnect()");
+	ccn_disconnect(h);
+	LDPLOG(LOG_DEBUG, "ldp_private_ccnush_data_with_freshness() ccn_destroy()");
+	ccn_destroy(&h);
+	return status;
+}
+
 double ldp_private_get_fs_mb_available(char * path) {
 	const unsigned int MB = 1024*1024;
 	unsigned long blocks_free = 0;
@@ -615,38 +889,17 @@ double ldp_private_get_fs_mb_available(char * path) {
 	return (free_size * blocks_free)/MB; // Should we apply ceil?
 }
 
-int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path) {
-	if ((settings == NULL) || (path == NULL)) {
-		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
-		return -1;
+// Technique applied from ccnseqwriter
+struct ccn_charbuf *ldp_private_startwrite_tpl(int scope) {
+	struct ccn_charbuf *tpl = NULL;
+	tpl = ccn_charbuf_create();
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_Interest, CCN_DTAG);
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_Name, CCN_DTAG);
+	ccn_charbuf_append_closer(tpl);
+	if (fabs(scope) < 3) {
+		ccnb_tagged_putf(tpl, CCN_DTAG_Scope, "%d", scope);
 	}
-	settings->sys_fs_path = strdup(path);
-  	return 0;
+	ccn_charbuf_append_closer(tpl);
+	return tpl;	
 }
 
-int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path) {
-	if ((settings == NULL) || (path == NULL)) {
-		LDPLOG(LOG_ERR, "ldp_settings_set_sys_logfile() TLDPSettings are NULL");
-		return -1;
-	}
-	settings->sys_logfile = strdup(path);
-  	return 0;
-}
-
-int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id) {
-	if ((settings == NULL) || (user_id == NULL)) {
-		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
-		return -1;
-	}
-	settings->user_id = strdup(user_id); // XXX This doesn't make sense?  Why do this?  Should be user_id
-  	return 0;
-}
-
-int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri) {
-	if ((settings == NULL) || (keystore_uri == NULL)) {
-		LDPLOG(LOG_ERR, "ldp_settings_set_keystore_uri() TLDPSettings are NULL");
-		return -1;
-	}
-	settings->keystore_uri = strdup(keystore_uri);
-  	return 0;	
-}
