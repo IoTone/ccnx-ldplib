@@ -93,69 +93,69 @@ void ldp_settings_destroy(TLDPSettings **settings) {
 			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), size of ccnd_routes = %d", size);
 			for (i = 0; i < size; i++) {
 				if (ldpobj->ccnd_routes[i] != NULL) {
-					LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->ccnd_routes[%d])", i);
+					LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->ccnd_routes[%d])", i);
 					free(ldpobj->ccnd_routes[i]);
 				}
 			}
 		}
 
 		if (ldpobj->topo_prefix != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->topo_prefix)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->topo_prefix)");
 			free(ldpobj->topo_prefix);
 		}
 
 		if (ldpobj->user_id != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->user_id)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->user_id)");
 			free(ldpobj->user_id);
 		}
 
 		if (ldpobj->user_secret != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->user_secret)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->user_secret)");
 			free(ldpobj->user_secret);
 		}
 
 		if (ldpobj->user_copyright != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->user_copyright)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->user_copyright)");
 			free(ldpobj->user_copyright);
 		}
 
 		if (ldpobj->user_location_default != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->user_location_default)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->user_location_default)");
 			free(ldpobj->user_location_default);
 		}
 
 		if (ldpobj->sys_fs_path != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->sys_fs_path)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->sys_fs_path)");
 			free(ldpobj->sys_fs_path);
 		}
 
 		if (ldpobj->user_presence_default != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->user_presence_default)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->user_presence_default)");
 			free(ldpobj->user_presence_default);
 		}
 
 		if (ldpobj->ccnd_hostname != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->ccnd_routes_count)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->ccnd_routes_count)");
 			free(ldpobj->ccnd_hostname);
 		}
 
 		if (ldpobj->ccnd_port != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->ccnd_port)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->ccnd_port)");
 			free(ldpobj->ccnd_port);
 		}
 
 		if (ldpobj->keystore_uri != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->keystore_uri)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->keystore_uri)");
 			free(ldpobj->keystore_uri);
 		}
 
 		if (ldpobj->keylocator_uri != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh->keylocator_uri)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->keylocator_uri)");
 			free(ldpobj->keylocator_uri);
 		}
 
 		if (ldpobj->user_ccnx_dir != NULL) {
-			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(psh-user_ccnx_dir)");
+			LDPLOG(LOG_DEBUG, "ldp_settings_destroy(), free(ldpobj->user_ccnx_dir)");
 			free(ldpobj->user_ccnx_dir);
 		}
 
@@ -353,6 +353,104 @@ int ldp_settings_init(TLDPSettings *settings) {
 
 	return (0);
 } /* Initialize Settings using the TLDPSettings */
+
+int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj) {
+	int status = 0;
+	LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() begin");
+	struct ccn_charbuf *content_uri;
+
+	char uri[256]; // XXX Increase this, add def in headers
+
+	char *ccn_prefix = NULL;
+	unsigned long metadata_bytes_length = 0;
+	if (peer_id_common_name == NULL) {
+		LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() ERROR NULL content_name passed to ldp_write_peer_metadata_from_bytes()");
+		status = -1;
+	}
+
+	if (metadata == NULL) {
+		// TODO: Implement defaults
+		LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() ERROR NULL metadata passed to ldp_write_peer_metadata_from_bytes()");
+		status = -1;
+	} else {
+		metadata_bytes_length = strlen(metadata);
+	}
+
+	if (ccn_prefix == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ccn_prefix passed to ldp_write_peer_metadata_from_bytes()");
+		ccn_prefix = strdup(LDP_DEFAULT_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+	}
+
+	if (access_control_obj == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL access_control_obj passed to ldp_write_peer_metadata_from_bytes(), ignore");
+	}
+
+	if ((content_uri = ccn_charbuf_create()) == NULL) {
+		LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() ERROR cannot ccn_charbuf_create()");
+		status = -1;
+	}
+
+	LDPLOG(LOG_DEBUG, "Some Useful CCNx ENV\n==================");
+
+	if (getenv("HOME") != NULL) {
+		LDPLOG(LOG_DEBUG, "getenv(HOME) = %s", strdup(getenv("HOME")));
+	}
+
+	if (getenv("CCNX_DIR") != NULL) {
+		LDPLOG(LOG_DEBUG, "getenv(CCNX_DIR) = %s", strdup(getenv("CCNX_DIR")));
+	}
+
+	if (getenv("CCNX_USER_NAME") != NULL) {
+		LDPLOG(LOG_DEBUG, "getenv(CCNX_USER_NAME) = %s", strdup(getenv("CCNX_USER_NAME")));
+	}
+
+	if (getenv("CCNX_USER_NAMESPACE_PREFIX") != NULL) {
+		LDPLOG(LOG_DEBUG, "getenv(CCNX_USER_NAMESPACE_PREFIX = %s", strdup(getenv("CCNX_USER_NAMESPACE_PREFIX")));
+	}
+
+	// 
+	// 1. ccnush the Peer Metadata (i.e. push the image into CCN)
+
+	//
+	// We potentially want to have a real pipeline processing such things so work can be split up, or at least, we can queue
+	// up requests so that each ccnush call is asynchronous.
+	//
+
+	if (status == 0) {
+		// ccnush metadata
+		// Create peerID in the LDP_DEFAULT_PEERGROUP_PEERS
+		// XXX We really want to be writing this under: LDP_DEFAULT_PEERGROUP_PEERS_PEERID_METADATA_1_0_0
+		sprintf(uri, ccn_prefix, peer_id_common_name);
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() to name uri = %s", uri);
+
+		if (ccn_name_from_uri(content_uri, uri) <= 0) {
+			LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() failed to create ccn_name_from_uri for %s%s", LDP_DEFAULT_PEERGROUP_PEERS, peer_id_common_name);
+			status = -1;
+		} else {
+			// LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() created ccn_name_from_uri() content_name = %s, ret=%d", ccn_charbuf_as_string(content_uri), ret);
+			/* if (ldp_private_ccnush_data(content_uri, metadata, metadata_bytes_length, 60000L, LDP_DEFAULT_SCOPE) < 0) {
+				status = -1;
+			} */
+			
+			if (ldp_private_ccnush_data_with_freshness(content_uri, metadata, metadata_bytes_length, 60000L, LDP_DEFAULT_SCOPE, ldp_CONTENT_FRESHNESS_IN_SEC_DEFAULT, FALSE) < 0) {
+				status = -1;
+			}
+
+			if (status == 0) {
+				 LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() success");
+			} else {
+				LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() failed");
+			}
+		} 
+
+		// Cleanup names
+		ccn_charbuf_destroy(&content_uri);
+	} else {
+		LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() bailing because of earlier errors");
+	}
+ 	return status;
+} /* Write metadata from buffer */
+
 
 /*
  * Utility Methods
