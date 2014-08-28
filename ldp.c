@@ -903,3 +903,24 @@ struct ccn_charbuf *ldp_private_startwrite_tpl(int scope) {
 	return tpl;	
 }
 
+// Technique applied from ccncat
+struct ccn_charbuf *ldp_private_interest_tpl(int allow_stale, int scope) {
+	struct ccn_charbuf *tpl = NULL;
+	tpl = ccn_charbuf_create();
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_Interest, CCN_DTAG);
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_Name, CCN_DTAG);
+	ccn_charbuf_append_closer(tpl);
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_MaxSuffixComponents, CCN_DTAG);
+	ccnb_append_number(tpl, 1);
+	ccn_charbuf_append_closer(tpl);
+	if (allow_stale) {
+		ccn_charbuf_append_tt(tpl, CCN_DTAG_AnswerOriginKind, CCN_DTAG);
+		ccnb_append_number(tpl, CCN_AOK_DEFAULT | CCN_AOK_STALE);
+		ccn_charbuf_append_closer(tpl);
+	}
+	if (fabs(scope) < 3) {
+		ccnb_tagged_putf(tpl, CCN_DTAG_Scope, "%d", scope);
+	}
+	ccn_charbuf_append_closer(tpl);
+	return tpl;
+}
