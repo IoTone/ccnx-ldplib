@@ -473,6 +473,25 @@ char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *
 	return bytes;
 }
 
+char** ldp_get_peers(int *peer_names_length, char *access_control_obj) {
+	char **peer_names = {0};
+
+	LDPLOG(LOG_DEBUG, "ldp_get_peers() begin");
+
+	if (access_control_obj == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_get_peers() NULL access_control_obj passed, ignore");
+	}
+
+	peer_names = ldp_private_get_ccn_child_name_components_under_name(DEFAULT_LDP_PEERGROUP_PEERS, peer_names_length);
+	LDPLOG(LOG_DEBUG, "ldp_get_peers(), we found %d names", *peer_names_length);
+	if (peer_names != NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_get_peers(), first element: peer_names[0]=%s", peer_names[0]);
+	} else {
+		LDPLOG(LOG_ERR, "ldp_get_peers() got NULL data back, need to handle error");
+	}
+	return peer_names;
+}
+
 int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path) {
 	if ((settings == NULL) || (path == NULL)) {
 		LDPLOG(LOG_ERR, "ldp_settings_set_sys_fs_path() TLDPSettings are NULL");
@@ -1029,19 +1048,6 @@ char *ldp_private_ccnsip_data(char *content_name_uri, long timeout_in_millis, in
     return ptr;
 }
 
-// Technique applied from ccnseqwriter
-struct ccn_charbuf *ldp_private_startwrite_tpl(int scope) {
-	struct ccn_charbuf *tpl = NULL;
-	tpl = ccn_charbuf_create();
-	ccn_charbuf_append_tt(tpl, CCN_DTAG_Interest, CCN_DTAG);
-	ccn_charbuf_append_tt(tpl, CCN_DTAG_Name, CCN_DTAG);
-	ccn_charbuf_append_closer(tpl);
-	if (fabs(scope) < 3) {
-		ccnb_tagged_putf(tpl, CCN_DTAG_Scope, "%d", scope);
-	}
-	ccn_charbuf_append_closer(tpl);
-	return tpl;	
-}
 
 // Technique applied from ccncat
 struct ccn_charbuf *ldp_private_interest_tpl(int allow_stale, int scope) {
@@ -1063,4 +1069,240 @@ struct ccn_charbuf *ldp_private_interest_tpl(int allow_stale, int scope) {
 	}
 	ccn_charbuf_append_closer(tpl);
 	return tpl;
+}
+
+//
+// Utility Items below are inspired by ccnls
+//
+struct ldp_private_upcalldata {
+    int magic; /* 856372 */
+    long *counter;
+    unsigned warn;
+    unsigned option;
+    int n_excl;
+    int scope;
+    int flags;
+    int allow_stale;
+    struct ccn_charbuf **excl; /* Array of n_excl items */
+};
+
+
+static int ldp_private_namecompare(const void *a, const void *b)
+{
+    const struct ccn_charbuf *aa = *(const struct ccn_charbuf **)a;
+    const struct ccn_charbuf *bb = *(const struct ccn_charbuf **)b;
+    int ans = ccn_compare_names(aa->buf, aa->length, bb->buf, bb->length);
+    if (ans == 0)
+        LDPLOG(LOG_ERR, "ldp_private_namecompare() issue %d\n", __LINE__);
+    return (ans);
+}
+
+enum ccn_upcall_res ldp_private_namelookup_incoming_content(
+    struct ccn_closure *selfp,
+    enum ccn_upcall_kind kind,
+    struct ccn_upcall_info *info) {
+
+    struct ccn_charbuf *c = NULL;
+    struct ccn_charbuf *comp = NULL;
+    struct ccn_charbuf *uri = NULL;
+    struct ccn_charbuf *templ = NULL;
+    const unsigned char *ccnb = NULL;
+    size_t ccnb_size = 0;
+    struct ccn_indexbuf *comps = NULL;
+    int matched_comps = 0;
+    int res;
+    int i;
+    struct ldp_private_upcalldata *data = selfp->data;
+    
+    if (data->magic != 856372) 
+    	return(CCN_UPCALL_RESULT_ERR); /* XXX Don't abort(); */
+    if (kind == CCN_UPCALL_FINAL)
+        return(CCN_UPCALL_RESULT_OK);
+    if (kind == CCN_UPCALL_INTEREST_TIMED_OUT)
+        return(CCN_UPCALL_RESULT_REEXPRESS);
+    if (kind == CCN_UPCALL_CONTENT_UNVERIFIED) {
+        if ((data->option & 0x00) != 0)
+        return(CCN_UPCALL_RESULT_VERIFY);
+        }
+    else if (kind != CCN_UPCALL_CONTENT) return(CCN_UPCALL_RESULT_ERR); /* XXX Don't abort(); */
+    
+    ccnb = info->content_ccnb;
+    ccnb_size = info->pco->offset[CCN_PCO_E];
+    comps = info->content_comps;
+    matched_comps = info->pi->prefix_comps;
+    c = ccn_charbuf_create();
+    uri = ccn_charbuf_create();
+    templ = ccn_charbuf_create();
+    /* note that comps->n is 1 greater than the number of explicit components */
+    if (matched_comps > comps->n) {
+        ccn_uri_append(c, ccnb, ccnb_size, 1);
+        LDPLOG(LOG_ERR, "ldp_private_namelookup_incoming_content(), fatal error  %s\n", ccn_charbuf_as_string(uri));
+        return(CCN_UPCALL_RESULT_ERR);
+    }
+    data->counter[0]++;
+    /* Recover the same prefix as before */
+    ccn_name_init(c);
+    res = ccn_name_append_components(c, info->interest_ccnb,
+                                     info->interest_comps->buf[0],
+                                     info->interest_comps->buf[matched_comps]);
+    if (res < 0) return(CCN_UPCALL_RESULT_ERR); /* XXX Don't abort(); */
+    
+    comp = ccn_charbuf_create();
+    ccn_name_init(comp);
+    if (matched_comps + 1 == comps->n) {
+        /* Reconstruct the implicit ContentObject digest component */
+        ccn_digest_ContentObject(ccnb, info->pco);
+        ccn_name_append(comp, info->pco->digest, info->pco->digest_bytes);
+    }
+    else if (matched_comps < comps->n) {
+        ccn_name_append_components(comp, ccnb,
+                                   comps->buf[matched_comps],
+                                   comps->buf[matched_comps + 1]);
+    }
+    res = ccn_uri_append(uri, comp->buf, comp->length, 0);
+    if (res < 0 || uri->length < 1)
+        LDPLOG(LOG_ERR, "ldp_private_namelookup_incoming_content() Fatal Error:  line %d res=%d\n", __LINE__, res);
+    else {
+        if (uri->length == 1)
+            ccn_charbuf_append(uri, ".", 1);
+        global_peer_names[global_peer_names_length] = strdup(ccn_charbuf_as_string(uri) + 1);
+       	global_peer_names_length++;
+        LDPLOG(LOG_DEBUG, (ccn_charbuf_as_string(uri) + 1));
+    }
+    ccn_charbuf_append_tt(templ, CCN_DTAG_Interest, CCN_DTAG);
+    ccn_charbuf_append(templ, c->buf, c->length); /* Name */
+    if (matched_comps == comps->n) {
+        /* The interest supplied the digest component */
+        ccn_charbuf_destroy(&comp);
+        /*
+         * We can't rely on the Exclude filter to keep from seeing this, so 
+         * say that we need at least one more name component.
+         */
+        ccn_charbuf_append_tt(templ, CCN_DTAG_MinSuffixComponents, CCN_DTAG);
+        ccn_charbuf_append_tt(templ, 1, CCN_UDATA);
+        ccn_charbuf_append(templ, "1", 1);
+        ccn_charbuf_append_closer(templ); /* </MinSuffixComponents> */
+    }
+    else {
+        data->excl = realloc(data->excl, (data->n_excl + 1) * sizeof(data->excl[0]));
+        data->excl[data->n_excl++] = comp;
+        comp = NULL;
+    }
+    qsort(data->excl, data->n_excl, sizeof(data->excl[0]), &ldp_private_namecompare);
+    ccn_charbuf_append_tt(templ, CCN_DTAG_Exclude, CCN_DTAG);
+    for (i = 0; i < data->n_excl; i++) {
+        comp = data->excl[i];
+        if (comp->length < 4) return(CCN_UPCALL_RESULT_ERR); /* XXX Don't abort(); */
+        ccn_charbuf_append(templ, comp->buf + 1, comp->length - 2);
+    }
+    comp = NULL;
+    ccn_charbuf_append_closer(templ); /* </Exclude> */
+
+    // XXX I think we can exclude this
+    ccnb_tagged_putf(templ, CCN_DTAG_AnswerOriginKind, "%d", CCN_AOK_CS);
+    if (data->scope > -1)
+       ccnb_tagged_putf(templ, CCN_DTAG_Scope, "%d", data->scope);
+    ccn_charbuf_append_closer(templ); /* </Interest> */
+    if (templ->length > data->warn) {
+        LDPLOG(LOG_WARNING, "ldp_private_namelookup_incoming_content() Interest packet is %d bytes\n", (int)templ->length);
+        data->warn = data->warn * 8 / 5;
+    }
+    ccn_express_interest(info->h, c, selfp, templ);
+    ccn_charbuf_destroy(&templ);
+    ccn_charbuf_destroy(&c);
+    ccn_charbuf_destroy(&uri);
+    return(CCN_UPCALL_RESULT_OK);
+}
+
+char ** ldp_private_get_ccn_child_name_components_under_name(char *uri_prefix, int *number_of_names) {
+	struct ccn *handle = NULL;
+	struct ccn_charbuf *prefix = NULL;
+	struct ccn_charbuf *templ = NULL;
+	struct ldp_private_upcalldata *data = NULL;
+
+	global_peer_names_length = 0;
+	memset(global_peer_names, 0, MAX_GLOBAL_PEERS_LENGTH);
+
+	int i;
+	int n;
+	int res;
+	int allow_stale = 0;
+	long counter = 0;
+
+	struct ccn_closure *cl = 0;
+	int timeout_millis = 500;
+
+	if (uri_prefix == NULL) {
+		LDPLOG(LOG_ERR, "ldp_private_get_ccn_child_name_components_under_name() missing uri prefix");
+		return NULL;
+	}
+
+    prefix = ccn_charbuf_create();
+    res = ccn_name_from_uri(prefix, uri_prefix);
+    if (res < 0) {
+    	LDPLOG(LOG_ERR, "ldp_private_get_ccn_child_name_components_under_name() malformed name, please provide a well-formed uri prefix");
+		return NULL;
+    }
+    
+    handle = ccn_create();
+    //
+    // If you leave the second argument NULL, this fails on Android
+    //
+    if (ccn_connect(handle, ldp_private_connection_name) == -1) {
+        LDPLOG(LOG_ERR, "Could not connect to ccnd");
+        return NULL;
+    }
+    
+    data = calloc(1, sizeof(*data));
+    data->magic = 856372;
+    data->warn = 1492;
+    data->counter = &counter;
+    data->option = 0;
+    data->scope = -1;
+    data->allow_stale = allow_stale;
+    // data->flags |= ALLOW_STALE;
+
+    cl = calloc(1, sizeof(*cl));
+    cl->p = &ldp_private_namelookup_incoming_content;
+    cl->data = data;
+    if (data->scope > -1) {
+        templ = ccn_charbuf_create();
+        ccn_charbuf_append_tt(templ, CCN_DTAG_Interest, CCN_DTAG);
+        ccn_charbuf_append_tt(templ, CCN_DTAG_Name, CCN_DTAG);
+        ccn_charbuf_append_closer(templ); /* </Name> */
+        ccnb_tagged_putf(templ, CCN_DTAG_Scope, "%d", data->scope);
+        ccn_charbuf_append_closer(templ); /* </Interest> */
+    }
+    ccn_express_interest(handle, prefix, cl, templ);
+    ccn_charbuf_destroy(&templ);
+    cl = NULL;
+    data = NULL;
+    for (i = 0;; i++) {
+        n = counter;
+        ccn_run(handle, timeout_millis); /* stop if we run dry for 1/2 sec */
+        /* XXX Don't need to flush */
+        /* fflush(stdout); */
+        if (counter == n)
+            break;
+    }
+    ccn_destroy(&handle);
+    ccn_charbuf_destroy(&prefix);
+    *number_of_names = global_peer_names_length;
+    LDPLOG(LOG_DEBUG, "global_peer_names_length=%d,NULL global_peer_names[0]=%s", global_peer_names_length, global_peer_names[0]);
+
+	return global_peer_names;
+}
+
+// Technique applied from ccnseqwriter
+struct ccn_charbuf *ldp_private_startwrite_tpl(int scope) {
+	struct ccn_charbuf *tpl = NULL;
+	tpl = ccn_charbuf_create();
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_Interest, CCN_DTAG);
+	ccn_charbuf_append_tt(tpl, CCN_DTAG_Name, CCN_DTAG);
+	ccn_charbuf_append_closer(tpl);
+	if (fabs(scope) < 3) {
+		ccnb_tagged_putf(tpl, CCN_DTAG_Scope, "%d", scope);
+	}
+	ccn_charbuf_append_closer(tpl);
+	return tpl;	
 }
