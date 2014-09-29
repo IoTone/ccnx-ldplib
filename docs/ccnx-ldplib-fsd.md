@@ -1,4 +1,4 @@
-# ccnx-ldplib v0.9.0
+# ccnx-ldplib v0.9.0.1
 
 ##  Functional System Design (FSD)
 
@@ -9,7 +9,7 @@ Copyright 2014 IoTone, Inc.
 
 Author/Owner:        David J. Kordsmeier
 
-Version/Date:        v0.9.0
+Version/Date:        v0.9.0.1
 
 
 
@@ -19,7 +19,7 @@ Developers need secure, easy way to discover or advertise (publish) devices and 
 
 
 
-**Last Modified: 8/23/2014 17:30:00    **
+**Last Modified: 9/28/2014 17:30:00    **
 
 # CONTACT & DISTRIBUTION
 
@@ -85,7 +85,7 @@ Devices and Services must first know how to introspect their own metadata, or th
 
   - CCNx LDP Registration Phase : The phase in which CCNx LDP Clients registers its metadata in order to join a particular peer group namespace
 
-  - CCNx LDP Discovery Phase : The phase in which CCNx LDP Clients finds CCNx LDP Peer to interact with  
+  - CCNx LDP Discovery Phase : The phase in which CCNx LDP Clients find CCNx LDP Peers to interact with  
 
   - CCNx LDP Errors : All Errors that occur in the course of using CCNx LDP.  The errors are defined contain enough information to diagnose issues. 
 
@@ -100,6 +100,7 @@ Devices and Services must first know how to introspect their own metadata, or th
 The following assumptions are made regarding this project:
 
 - All CCNx LDP clients are running their own ccnd gateway, and are on the same API version
+- All CCNx LDP clients should be operating with accurate time clocks. Clocks wildly out of sync will create problems messaging routing, and will prevent proper crypto verification.
 - Handling losses of connectivity and managing errors in the network transport are the responsibility
 - No distinction is made between the kinds of devices, they could be mobiles, servers, or IoT nodes.
 - It is assumed that Assymetric Keys are acceptable for use by CCNx LDP Clients
@@ -200,18 +201,17 @@ Development and QA will be performed by the IoTone team.
 | --- | --- | --- |
 | Peer Metadata Format | The Metadata is used by Clients to publish their information and find Peers | 3.1.1 |
 | ~~CMD Message Format~~ | ~~When CCNx LDP Commands are sent, there is a Request/Response format that will be used~~ | ~~3.1.2~~ |
-| Access Control for Namespaces| Namespaces can be  | 3.1.2 |
+| Access Control for Namespaces| Namespaces can be put under access control, such that only priveleged Peers can access the namespace. | 3.1.2 |
 | Content Naming Scheme  | Data exchanged between Peers will be organized under hierarchical naming schemes for CCNx LDP | 3.1.3 |
 | Registration Phase | Each Peer must register to publish metadata | 3.1.4 |
 | Discovery Phase | Remote CCNx LDP Client has to discover Peers | 3.1.5 |
 | Error Messages | Errors are defined for all possible error conditions | 3.1.6 |
 | | |
 
-Note, 3.1.2 CMD Message has been stricken from the feature set, as there is no need to support CMD Messages in the spec.  It will be replaces with an access control feature.
 
   *3.1.1* __Peer Metadata Format__
 
-* The Peer Metadata is intended to be an internal representation of Peer state at any given time.  A structured format is preferred over a list or config file.  To simplify the effort, Peer Metadata is based on the [Universal Device Metadata Specification]() and/or the Universal Service Metadata, and offers a superset of attributes.  Each required attribute is described as follows: 
+* The Peer Metadata is intended to be an internal representation of Peer state at any given time.  A structured format is preferred over a list or config file.  To simplify the effort, Peer Metadata is based on the [Universal Device Metadata Specification](https://github.com/IoTone/IoToneSpec_UniversalDeviceMetadata/blob/master/IOTONE_SPEC_1.md) and/or the [Universal Service Metadata(https://github.com/IoTone/IoToneSpec_UniversalServiceMetadata/blob/master/IOTONE_SPEC_2.md), and offers a superset of attributes.  Each required attribute is described as follows: 
 
 * peer-id: a name defined by a Peer to uniquely identify this peer as a member of a Peer Group.  TODO: Define how we deal with duplicate peer-ids, and spoofing of peer-ids.  Also explain how peer-ids are generated. 
 
@@ -228,8 +228,37 @@ Note, 3.1.2 CMD Message has been stricken from the feature set, as there is no n
    "peer-id":"1230sdf1290000012",
    "usm_services":[
       {
-         "usm_key":"froglegs.local",
-         "usm_type":"webserver"
+         "usm_key": "lighttpd-001",
+         "usm_service_name": "storage-cloud",
+         "usm_version_number": "1.0.0",
+         "usm_vendor": "Big Company, Inc",
+         "usm_guid": "10000001a",
+         "usm_author": "rockstardev@abigcompany.com",
+         "usm_type": "webserver",
+         "usm_class":["object-storage"],
+         "usm_service_endpoint": {
+          "create_block": {
+            "put": [":id", {
+              "id":containername,
+              "restype":"container"
+              }, callback]
+          },
+          "get_block": {
+            "get": [":id", {
+              "id":containername,
+              "restype":"container"
+            }, callback]
+          }
+         },
+         "usm_copyright":"2014 Big Company Inc.",
+         "usm_license":"2014 Big Company Proprietary License",
+         "usm_tags":["webserver","storage","public"],
+         "usm_build_origin":"Canada",
+         "usm_build_date":"12/01/2013",
+         "usm_capabilities": {
+            "max_file_size": "10gb",
+            "cost_per_gb": "0" 
+         }
       }
    ],
    "udm_devices":[
