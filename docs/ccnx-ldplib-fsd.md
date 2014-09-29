@@ -462,7 +462,7 @@ The following devices are planned for local testing to validate the design:
 
   *3.4* __Operating Systems__
 
-Android 4.0.x – 4.4.x must be supported.  Linux x86, ARM.  Mac OS X.   Windows.
+Android 4.0.x – 4.4.x must be supported.  Linux x86, ARM.  Mac OS X.   Windows (Need to attempt Windows build).
 
   *3.5* __Languages and Input Methods__
 
@@ -486,7 +486,7 @@ N/A
 
   *3.9* __Process Design__
 
-See detailed diagrams defined in __3.1.1 - 3.1.6__.
+See detailed diagrams defined in __3.1.4 - 3.1.5__.
 
   *3.10* __UI Specification__
 
@@ -494,7 +494,7 @@ N/A
 
   *3.11* __Data Model__
 
-The datamodel is fully defined in 3.1.1 and 3.1.2.
+The datamodel is fully defined in 3.1.1.
 
   *3.12* __API__
 
@@ -553,8 +553,7 @@ System tests can be run to verify the functioning of the system.  Simulating two
   *5.1* __Dependencies__
 
 - CCNx 0.8.0 API & Implementation
-- jsmn: http://zserge.bitbucket.org/jsmn.html
-- bstrlib (TBD)
+- cJSON: http://sourceforge.net/projects/cjson
 
   *5.2* __Software__
 
@@ -569,3 +568,4 @@ N/A - No need to do this.  It will all get done this week
 - [Apple Bonjour](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1): While addressing the same feature set as CCNx LDP, it does not address a number of key points.  There is no mention of security in the Bonjour protocol.  For example, one has no way to verify the authenticity of a service or host.  Malicious devices can easily get involved in MITM attacks and spoof a valid host or service.  There is no notion of access control. Any host can access any published service.  And due to the implementation, without special provisions at the router level, Bonjour is not designed to operate across subnets, limiting its usefulness for 'global' scale deployments.  There are a number of descriptions for how to use [DNS-sd](http://dns-sd.org), multicast-routing, or proxy-bonjour services.
 - [UPnP](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0.pdf): UPnP is another strong standard that offers a lot in terms of scope.  The working group behind UPnP contains the majority of network gear heavyweights. What it does not address is security.  In fact, security holes have [attracted the attention of the US-CERT organization](http://www.zdnet.com/how-to-fix-the-upnp-security-holes-7000010584/).
 - [CCNx Access Control Specification 2010](https://github.com/RazortoothRTC/ccnx/blob/26-forward-port-v0.7.2-release-to-0.8.0/doc/specs/AccessControl/AccessControlSpecs01.pdf?raw=true) : The specification explains how access control groups work and are to be implemented.
+- TODO - Lookup CCNx 1.0 Access Control details and add a reference
