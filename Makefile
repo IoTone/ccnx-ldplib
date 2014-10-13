@@ -23,12 +23,12 @@ ADD_INCLUDE = $(EXTERNAL_DIR)/cJSON
 #
 # Add libs here, for example: -lpthread 
 #
-ADD_LIBS =
+ADD_LIBS = -lm -L$(ADD_INCLUDE)/cJSON
 IFLAGS = -I$(INSTALL_BASE)/include -I$(ADD_INCLUDE)
 LFLAGS = -L$(INSTALL_BASE)/lib -lccn -lccnsync -lcrypto $(ADD_LIBS)
 
 PROGRAMS = ldputil
-OBJS = ldp.o
+OBJS = $(EXTERNAL_DIR)/cJSON/cJSON.o ldp.o
 LIBS = ldplib.a
 
 
@@ -47,11 +47,8 @@ test:
 ccnx:
 	(cd $(INSTALL_BASE) && make)
 
-jsmn.o: $(EXTERNAL_DIR)/bstrlib/bstrlib.c $(EXTERNAL_DIR)/bstrlib/bstraux.c
-	(cd $(EXTERNAL_DIR)/bstrlib && $(CC) $(CFLAGS) $(IFLAGS) -c bstrlib.c bstraux.c)
-
-bstrlib.o: $(EXTERNAL_DIR)/bstrlib/bstrlib.c $(EXTERNAL_DIR)/bstrlib/bstraux.c
-	(cd $(EXTERNAL_DIR)/bstrlib && $(CC) $(CFLAGS) $(IFLAGS) -c bstrlib.c bstraux.c)
+cJSON.o: $(EXTERNAL_DIR)/cJSON/cJSON.c
+	(cd $(EXTERNAL_DIR)/cJSON && $(CC) $(CFLAGS) -c cJSON.c -lm)
 
 ldp.o: ldp.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c ldp.c
