@@ -7,7 +7,7 @@
 # 
 # Runtime Depends on:
 # - libccnx.a and libccnx headers
-# - jsmn
+# - cJSON
 # 
 # Test Suite depends on:
 # - google test
@@ -16,9 +16,9 @@
 EXTERNAL_DIR = ./external
 # Set INSTALL_BASE to the location of your CCNx installation or dev source base
 #
-# INSTALL_BASE = $(EXTERNAL_DIR)/ccnx-0.8.0
+# for example INSTALL_BASE = $(EXTERNAL_DIR)/ccnx-0.8.0
 #
-ADD_INCLUDE = $(EXTERNAL_DIR)/bstrlib
+ADD_INCLUDE = $(EXTERNAL_DIR)/cJSON
 
 #
 # Add libs here, for example: -lpthread 
