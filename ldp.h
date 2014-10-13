@@ -34,6 +34,8 @@
     #include "ldp_private.h"
 #endif
 
+#include <cJSON.h>
+
 /*
  * Defs
  */
@@ -61,6 +63,9 @@ int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
 int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj);
 char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
 char ** ldp_get_peers(int *peer_names_length, char *access_control_obj);
+int ldp_write_peer_metadata_from_json(char *peer_id_common_name, cJSON* json, char *access_control_obj);
+cJSON* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
+cJSON* ldp_get_peers_as_json(int *peer_names_length, char *access_control_obj);
 
 /*
  * UTILITY Methods
