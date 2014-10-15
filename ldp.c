@@ -534,7 +534,7 @@ int ldp_write_peer_metadata_from_json(char *peer_id_common_name, TJson* json, ch
 
 TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
 	const char* data = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
-	cJSON* jsonroot = cJSON_Parse(data);
+	TJson* jsonroot = cJSON_Parse(data);
 	if (!jsonroot) {
 		LDPLOG(LOG_ERR, "ldp_get_peer_metadata_as_json cannot parse JSON");
 		return NULL;
@@ -545,7 +545,7 @@ TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *d
 
 TJson* ldp_get_peers_as_json(int *peer_names_length, char *access_control_obj) {
 	const char* data = ldp_get_peers_as_json(peer_names_length, access_control_obj);
-	cJSON* jsonroot = cJSON_Parse(data);
+	TJson* jsonroot = cJSON_Parse(data);
 	if (!jsonroot) {
 		LDPLOG(LOG_ERR, "ldp_get_peers_as_json cannot parse JSON");
 		return NULL;
