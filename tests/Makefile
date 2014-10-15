@@ -55,9 +55,10 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 all : $(TESTS)
 
+# Add: --gtest_break_on_failure to runall iterations to break on fail
 runall : $(TESTS)
 	for i in $(TESTS); do \
-		(./"$$i" --gtest_break_on_failure --gtest_output=xml:"$$i"_test_detail.xml) \
+		(./"$$i" --gtest_output=xml:"$$i"_test_detail.xml) \
 	done
 
 clean :

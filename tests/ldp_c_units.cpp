@@ -68,10 +68,10 @@ TEST(LDPCUnitTest, WritePeerMetadata) {
   
   LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
   EXPECT_EQ(ret, 0);
-  
   ldp_settings_destroy(&ldp_settings_obj);
   EXPECT_EQ(NULL, ldp_settings_obj);
   closelog();
+  printf("ok");
 }
 
 TEST(LDPCUnitTest, GetPeerMetadata) {
