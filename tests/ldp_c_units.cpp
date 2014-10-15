@@ -78,7 +78,7 @@ TEST(LDPCUnitTest, WritePeerMetadata) {
 TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
   TLDPSettings *ldp_settings_obj = NULL;
   int ret;
-  char *metastr = "{ \"peerID\" : \"8675309\"}";
+  char *metastr = "{ \"peerID\" : \"8675310\"}";
   TJson *jsonroot = cJSON_Parse(metastr);
 
   if (jsonroot == NULL) {
@@ -94,7 +94,7 @@ TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
   EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
   LDPLOG(LOG_DEBUG, "about to write peer metadata");
   // ret = ldp_write_peer_metadata_from_bytes(ldp_private_create_str("8675309"), ldp_DEFAULT_PEERGROUP_PEERS, ldp_private_create_str(metastr) , strlen(metastr), NULL, psobj); /* Write metadata from buffer */
-  ret = ldp_write_peer_metadata_from_json(ldp_private_create_str("86753099"), jsonroot, NULL); /* Write metadata from buffer */
+  ret = ldp_write_peer_metadata_from_json(ldp_private_create_str("86753098"), jsonroot, NULL); /* Write metadata from buffer */
   
   LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
   EXPECT_EQ(ret, 0);
