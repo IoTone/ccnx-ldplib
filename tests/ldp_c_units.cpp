@@ -103,6 +103,7 @@ TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
   closelog();
   printf("ok");
 }
+
 TEST(LDPCUnitTest, GetPeerMetadata) {
   TLDPSettings *ldp_settings_obj = NULL;
   char *metadata = NULL;
@@ -120,6 +121,36 @@ TEST(LDPCUnitTest, GetPeerMetadata) {
   
   LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_bytes(%s)", "86753099");
   metadata = ldp_get_peer_metadata_as_bytes("86753099", &bytes_read, NULL);
+  LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_bytes()");
+  EXPECT_TRUE(metadata != NULL);
+  if (metadata != NULL) {
+    LDPLOG(LOG_DEBUG, "read metadata = %s", metadata);
+  }
+  EXPECT_TRUE(bytes_read > 0);
+  LDPLOG(LOG_DEBUG, "Read = %d", bytes_read);
+
+  ldp_settings_destroy(&ldp_settings_obj);
+  EXPECT_EQ(NULL, ldp_settings_obj);
+  closelog();
+}
+
+TEST(LDPCUnitTest, GetPeerMetadataAsJSON) {
+  TLDPSettings *ldp_settings_obj = NULL;
+  TJson *metadata = NULL;
+  size_t bytes_read = 0;
+
+  LDPLOG = &ldp_log_console;
+  LDPLOG_setmask = &ldp_log_console_setlogmask;
+  LDPLOG_setmask(LOG_MASK(LOG_ERR));
+  openlog ("LDPCUnitTest", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1); // This should use stdout, not syslog messages file
+
+  ldp_settings_obj = ldp_settings_create();
+  EXPECT_TRUE(ldp_settings_obj);
+  EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
+
+  
+  LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_bytes(%s)", "86753098");
+  metadata = ldp_get_peer_metadata_as_json("86753098", &bytes_read, NULL);
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_bytes()");
   EXPECT_TRUE(metadata != NULL);
   if (metadata != NULL) {
@@ -157,6 +188,34 @@ TEST(LDPCUnitTest, GetPeers) {
   for (int i = 0; i < name_count; i++) {
     LDPLOG(LOG_DEBUG, "First name: %s", names[i]);
   }
+
+  ldp_settings_destroy(&ldp_settings_obj);
+  EXPECT_EQ(NULL, ldp_settings_obj);
+  closelog();
+}
+
+TEST(LDPCUnitTest, GetPeersAsJSON) {
+  TLDPSettings *ldp_settings_obj = NULL;
+  TJson* jsondata = NULL;
+  int name_count = 0;
+
+  LDPLOG = &ldp_log_console;
+  LDPLOG_setmask = &ldp_log_console_setlogmask;
+  LDPLOG_setmask(LOG_MASK(LOG_ERR));
+  openlog ("LDPCUnitTest", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1); // This should use stdout, not syslog messages file
+
+  ldp_settings_obj = ldp_settings_create();
+  EXPECT_TRUE(ldp_settings_obj);
+  EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
+
+  
+  LDPLOG(LOG_DEBUG, "about to call ldp_get_peers()");
+  jsondata = ldp_get_peers_as_json(&name_count, NULL);
+  LDPLOG(LOG_DEBUG, "done with call to ldp_get_peers()");
+  EXPECT_TRUE(jsondata);
+  EXPECT_TRUE(name_count >= 1);
+  LDPLOG(LOG_DEBUG, "Got name_count = %d", name_count);
+  LDPLOG(LOG_DEBUG, "All JSON: %s", cJSON_Print(jsondata));
 
   ldp_settings_destroy(&ldp_settings_obj);
   EXPECT_EQ(NULL, ldp_settings_obj);
