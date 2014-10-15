@@ -23,8 +23,8 @@ TEST_DIR = .
 # XXX We should remove this boost stuff, don't use it
 # BOOST_INCLUDE = $(INSTALL_BASE)/include/boost
 # BOOST_LIBS = $(INSTALL_BASE)/lib/libboost_regex.a $(INSTALL_BASE)/lib/libboost_thread.a
-ADD_INCLUDE = 
-ADD_LIBS =
+ADD_INCLUDE = $(EXTERNAL_DIR)/cJSON
+ADD_LIBS = -lm -L$(EXTERNAL_DIR)/cJSON -lcjson
 
 #
 # XXX We should remove this CXX stuff, we don't use it

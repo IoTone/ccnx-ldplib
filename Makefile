@@ -36,10 +36,14 @@ LIBS = ldplib.a
 CC = gcc
 CFLAGS = -g -Wall -Wextra -O2
 AR = ar
-default: $(PROGRAMS) $(LIBS)
+
+default: external $(PROGRAMS) $(LIBS)
 
 testframework:
 	(cd $(EXTERNAL_DIR) && wget https://googletest.googlecode.com/files/gtest-1.6.0.zip && unzip -o ./gtest-1.6.0.zip && cd gtest-1.6.0 && ./configure && make)
+
+external:
+	(cd $(EXTERNAL_DIR)/cJSON && make all)
 
 test:
 	(cd tests && make runall)
