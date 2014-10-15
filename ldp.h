@@ -34,6 +34,11 @@
     #include "ldp_private.h"
 #endif
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <cJSON.h>
 
 /*
@@ -83,4 +88,8 @@ void ldp_log_to_android_logcat(int priority, const char *format, ...);
  */
 
 #define TAG "ldplib"
+
+#ifdef __cplusplus
+}
+#endif
 #endif
