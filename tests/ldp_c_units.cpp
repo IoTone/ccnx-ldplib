@@ -2,6 +2,7 @@
 extern "C" {
   #include "ldp.h"
   #include "ldp_private.h"
+  #include <cJSON.h>
 }
 
 #include "gtest/gtest.h"
@@ -57,7 +58,7 @@ TEST(LDPCUnitTest, WritePeerMetadata) {
   LDPLOG = &ldp_log_console;
   LDPLOG_setmask = &ldp_log_console_setlogmask;
   LDPLOG_setmask(LOG_MASK(LOG_ERR));
-  openlog ("LDPNXCUnitTest", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1); // This should use stdout, not syslog messages file
+  openlog ("LDPCUnitTest", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1); // This should use stdout, not syslog messages file
 
   ldp_settings_obj = ldp_settings_create();
   EXPECT_TRUE(ldp_settings_obj);
@@ -74,6 +75,34 @@ TEST(LDPCUnitTest, WritePeerMetadata) {
   printf("ok");
 }
 
+TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
+  TLDPSettings *ldp_settings_obj = NULL;
+  int ret;
+  char *metastr = "{ \"peerID\" : \"8675309\"}";
+  TJson *jsonroot = cJSON_Parse(metastr);
+
+  if (jsonroot == NULL) {
+    FAIL() << "Failed to parse JSON";
+  }
+  LDPLOG = &ldp_log_console;
+  LDPLOG_setmask = &ldp_log_console_setlogmask;
+  LDPLOG_setmask(LOG_MASK(LOG_ERR));
+  openlog ("LDPCUnitTest", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1); // This should use stdout, not syslog messages file
+
+  ldp_settings_obj = ldp_settings_create();
+  EXPECT_TRUE(ldp_settings_obj);
+  EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
+  LDPLOG(LOG_DEBUG, "about to write peer metadata");
+  // ret = ldp_write_peer_metadata_from_bytes(ldp_private_create_str("8675309"), ldp_DEFAULT_PEERGROUP_PEERS, ldp_private_create_str(metastr) , strlen(metastr), NULL, psobj); /* Write metadata from buffer */
+  ret = ldp_write_peer_metadata_from_json(ldp_private_create_str("86753099"), jsonroot, NULL); /* Write metadata from buffer */
+  
+  LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
+  EXPECT_EQ(ret, 0);
+  ldp_settings_destroy(&ldp_settings_obj);
+  EXPECT_EQ(NULL, ldp_settings_obj);
+  closelog();
+  printf("ok");
+}
 TEST(LDPCUnitTest, GetPeerMetadata) {
   TLDPSettings *ldp_settings_obj = NULL;
   char *metadata = NULL;
