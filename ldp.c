@@ -529,15 +529,29 @@ int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri) {
 }
 
 int ldp_write_peer_metadata_from_json(char *peer_id_common_name, TJson* json, char *access_control_obj) {
-	return -1;
+	return ldp_write_peer_metadata_from_bytes(peer_id_common_name, cJSON_Print(json), access_control_obj);
 }
 
 TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
-	return NULL;
+	const char* data = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
+	cJSON* jsonroot = cJSON_Parse(data);
+	if (!jsonroot) {
+		LDPLOG(LOG_ERR, "ldp_get_peer_metadata_as_json cannot parse JSON");
+		return NULL;
+	} else {
+		return jsonroot;
+	}
 }
 
 TJson* ldp_get_peers_as_json(int *peer_names_length, char *access_control_obj) {
-	return NULL;
+	const char* data = ldp_get_peers_as_json(peer_names_length, access_control_obj);
+	cJSON* jsonroot = cJSON_Parse(data);
+	if (!jsonroot) {
+		LDPLOG(LOG_ERR, "ldp_get_peers_as_json cannot parse JSON");
+		return NULL;
+	} else {
+		return jsonroot;
+	}
 }
 
 /*
