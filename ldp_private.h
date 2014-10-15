@@ -115,6 +115,7 @@ struct LDPServiceHandle;
 	TODO: Add some json configuration mechanism
 */
 typedef struct LDPSettings TLDPSettings;
+typedef struct cJSON TJson;
 
 /*
  * Globals
