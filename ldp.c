@@ -534,7 +534,7 @@ int ldp_write_peer_metadata_from_json(char *peer_id_common_name, TJson* json, ch
 
 TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
 	const char* data = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
-	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_json get data")
+	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_json get data");
 	
 	TJson* jsonroot = cJSON_Parse(data);
 	
@@ -547,15 +547,18 @@ TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *d
 }
 
 TJson* ldp_get_peers_as_json(int *peer_names_length, char *access_control_obj) {
-	const char **peer_names = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
-	TJson*jsondata = cJSON_CreateArray();
+	// const char **peer_names = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
+	const char **peer_names = ldp_get_peers(peer_names_length, NULL);
+	TJson* jsondata = cJSON_CreateArray();
 	int i;
 
 	if (!jsondata) {
 		LDPLOG(LOG_ERR, "ldp_get_peers_as_json cannot parse JSON");
 		return NULL;
-	} 
-	for (i = 0; i < data_length; i++) {
+	}  else {
+		LDPLOG(LOG_DEBUG, "ldp_get_peers_as_json got %d names", *peer_names_length);
+	}
+	for (i = 0; i < *peer_names_length; i++) {
 		cJSON_AddItemToArray(jsondata, cJSON_CreateString(peer_names[i]));
   	}
 
@@ -1322,7 +1325,7 @@ char ** ldp_private_get_ccn_child_name_components_under_name(char *uri_prefix, i
     ccn_destroy(&handle);
     ccn_charbuf_destroy(&prefix);
     *number_of_names = global_peer_names_length;
-    LDPLOG(LOG_DEBUG, "global_peer_names_length=%d,NULL global_peer_names[0]=%s", global_peer_names_length, global_peer_names[0]);
+    LDPLOG(LOG_DEBUG, "global_peer_names_length=%d, global_peer_names[0]=%s", global_peer_names_length, global_peer_names[0]);
 
 	return global_peer_names;
 }

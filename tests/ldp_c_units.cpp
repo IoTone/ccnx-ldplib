@@ -149,9 +149,9 @@ TEST(LDPCUnitTest, GetPeerMetadataAsJSON) {
   EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
 
   
-  LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_bytes(%s)", "86753098");
+  LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_json(%s)", "86753098");
   metadata = ldp_get_peer_metadata_as_json("86753098", &bytes_read, NULL);
-  LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_bytes()");
+  LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_json()");
   EXPECT_TRUE(metadata != NULL);
   if (metadata != NULL) {
     LDPLOG(LOG_DEBUG, "read metadata = %s", metadata);
