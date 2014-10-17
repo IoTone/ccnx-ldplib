@@ -154,7 +154,7 @@ TEST(LDPCUnitTest, GetPeerMetadataAsJSON) {
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_json()");
   EXPECT_TRUE(metadata != NULL);
   if (metadata != NULL) {
-    LDPLOG(LOG_DEBUG, "read metadata = %s", metadata);
+    LDPLOG(LOG_DEBUG, "read metadata = %s", cJSON_Print(metadata));
   }
   EXPECT_TRUE(bytes_read > 0);
   LDPLOG(LOG_DEBUG, "Read = %d", bytes_read);
