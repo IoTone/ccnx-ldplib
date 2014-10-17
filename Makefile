@@ -37,12 +37,12 @@ CC = gcc
 CFLAGS = -g -Wall -Wextra -O2
 AR = ar
 
-default: external $(PROGRAMS) $(LIBS)
+default: externaldeps $(PROGRAMS) $(LIBS)
 
 testframework:
 	(cd $(EXTERNAL_DIR) && wget https://googletest.googlecode.com/files/gtest-1.6.0.zip && unzip -o ./gtest-1.6.0.zip && cd gtest-1.6.0 && ./configure && make)
 
-external:
+externaldeps:
 	(cd $(EXTERNAL_DIR)/cJSON && make all)
 
 test:
@@ -68,3 +68,5 @@ ldputil: $(OBJS) ldputil.o
 
 clean:
 	rm -f $(PROGRAMS) $(OBJS) *.o *.a *.dSYM core core.*
+
+.PHONY: all clean test externaldeps
