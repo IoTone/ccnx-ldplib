@@ -116,6 +116,7 @@ struct LDPServiceHandle;
 */
 typedef struct LDPSettings TLDPSettings;
 typedef struct cJSON TJson;
+typedef struct ccn_charbuf TCBuf;
 
 /*
  * Globals

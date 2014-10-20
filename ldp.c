@@ -354,7 +354,7 @@ int ldp_settings_init(TLDPSettings *settings) {
 	return (0);
 } /* Initialize Settings using the TLDPSettings */
 
-int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata, char *access_control_obj) {
+int ldp_write_peer_metadata_from_bytes(TCBuf *ns, char *peer_id_common_name, char *metadata, char *access_control_obj) {
 	int status = 0;
 	LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() begin");
 	struct ccn_charbuf *content_uri;
@@ -376,9 +376,13 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
 		metadata_bytes_length = strlen(metadata);
 	}
 
-	if (ccn_prefix == NULL) {
-		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ccn_prefix passed to ldp_write_peer_metadata_from_bytes()");
-		ccn_prefix = strdup(DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+	//
+	// We should check that the ns provided reflects the standard definition for
+	// peergroup.  
+	if (ns == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns passed to ldp_write_peer_metadata_from_bytes()");
+		ns = ccn_charbuf_create();
+	 	ccn_charbuf_append(ns, DEFAULT_LDP_PEERGROUP, strlen(DEFAULT_LDP_PEERGROUP));
 	}
 
 	if (access_control_obj == NULL) {
@@ -451,7 +455,7 @@ int ldp_write_peer_metadata_from_bytes(char *peer_id_common_name, char *metadata
  	return status;
 } /* Write metadata from buffer */
 
-char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *data_len, char *access_control_obj) {
+char * ldp_get_peer_metadata_as_bytes(TCBuf *ns, char *remote_peer_id_common_name, size_t *data_len, char *access_control_obj) {
 	int status = 0;
 	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_bytes() begin");
 	char* bytes = NULL;
@@ -473,7 +477,7 @@ char * ldp_get_peer_metadata_as_bytes(char *remote_peer_id_common_name, size_t *
 	return bytes;
 }
 
-char** ldp_get_peers(int *peer_names_length, char *access_control_obj) {
+char** ldp_get_peers(TCBuf *ns, int *peer_names_length, char *access_control_obj) {
 	char **peer_names = {0};
 
 	LDPLOG(LOG_DEBUG, "ldp_get_peers() begin");
@@ -528,11 +532,11 @@ int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri) {
   	return 0;	
 }
 
-int ldp_write_peer_metadata_from_json(char *peer_id_common_name, TJson* json, char *access_control_obj) {
+int ldp_write_peer_metadata_from_json(TCBuf* ns, char *peer_id_common_name, TJson* json, char *access_control_obj) {
 	return ldp_write_peer_metadata_from_bytes(peer_id_common_name, cJSON_Print(json), access_control_obj);
 }
 
-TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
+TJson* ldp_get_peer_metadata_as_json(TCBuf* ns, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
 	const char* data = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
 	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_json get data");
 	
@@ -546,7 +550,7 @@ TJson* ldp_get_peer_metadata_as_json(char *remote_peer_id_common_name, size_t *d
 	}
 }
 
-TJson* ldp_get_peers_as_json(int *peer_names_length, char *access_control_obj) {
+TJson* ldp_get_peers_as_json(TCBuf* ns, int *peer_names_length, char *access_control_obj) {
 	// const char **peer_names = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
 	const char **peer_names = ldp_get_peers(peer_names_length, NULL);
 	TJson* jsondata = cJSON_CreateArray();
