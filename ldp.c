@@ -354,14 +354,13 @@ int ldp_settings_init(TLDPSettings *settings) {
 	return (0);
 } /* Initialize Settings using the TLDPSettings */
 
-int ldp_write_peer_metadata_from_bytes(TCBuf *ns, char *peer_id_common_name, char *metadata, char *access_control_obj) {
+int ldp_write_peer_metadata_from_bytes(char *ns_peergroup_peers, char *peer_id_common_name, char *metadata, char *access_control_obj) {
 	int status = 0;
 	LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() begin");
 	struct ccn_charbuf *content_uri;
 
-	char uri[256]; // XXX Increase this, add def in headers
+	char uri[LDP_MAX_NAME_LENGTH]; // XXX Increase this
 
-	char *ccn_prefix = NULL;
 	unsigned long metadata_bytes_length = 0;
 	if (peer_id_common_name == NULL) {
 		LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() ERROR NULL content_name passed to ldp_write_peer_metadata_from_bytes()");
@@ -379,10 +378,9 @@ int ldp_write_peer_metadata_from_bytes(TCBuf *ns, char *peer_id_common_name, cha
 	//
 	// We should check that the ns provided reflects the standard definition for
 	// peergroup.  
-	if (ns == NULL) {
-		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns passed to ldp_write_peer_metadata_from_bytes()");
-		ns = ccn_charbuf_create();
-	 	ccn_charbuf_append(ns, DEFAULT_LDP_PEERGROUP, strlen(DEFAULT_LDP_PEERGROUP));
+	if (ns_peergroup_peers == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
+	 	ns_peergroup_peers = strlen(DEFAULT_LDP_PEERGROUP_PEERS);
 	}
 
 	if (access_control_obj == NULL) {
@@ -422,9 +420,15 @@ int ldp_write_peer_metadata_from_bytes(TCBuf *ns, char *peer_id_common_name, cha
 
 	if (status == 0) {
 		// ccnush metadata
-		// Create peerID in the LDP_DEFAULT_PEERGROUP_PEERS
+		// Creat a peerid in the peergroup namespace for metadata
 		// XXX We really want to be writing this under: LDP_DEFAULT_PEERGROUP_PEERS_PEERID_METADATA_1_0_0
-		sprintf(uri, ccn_prefix, peer_id_common_name);
+		// #define DEFAULT_LDP_PEERGROUP_PEERS "ccnx:/ldp.iotone.io/pg/default/peers"
+		// #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
+		// #define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/%s/metadata_1.0.0"
+		// "ccnx:/ldp.iotone.io/pg/default/peers" "/%s/metadata_1.0.0" 
+		strcpy(uri, ns_peergroup_peers);
+		strcpy(uri, LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+		sprintf(uri, peer_id_common_name);
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() to name uri = %s", uri);
 
 		if (ccn_name_from_uri(content_uri, uri) <= 0) {
@@ -455,11 +459,11 @@ int ldp_write_peer_metadata_from_bytes(TCBuf *ns, char *peer_id_common_name, cha
  	return status;
 } /* Write metadata from buffer */
 
-char * ldp_get_peer_metadata_as_bytes(TCBuf *ns, char *remote_peer_id_common_name, size_t *data_len, char *access_control_obj) {
+char * ldp_get_peer_metadata_as_bytes(char *ns_peergroup_peers, char *remote_peer_id_common_name, size_t *data_len, char *access_control_obj) {
 	int status = 0;
 	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_bytes() begin");
 	char* bytes = NULL;
-	char uri[128];
+	char uri[LDP_MAX_NAME_LENGTH];
 
 	if (remote_peer_id_common_name == NULL) {
 		LDPLOG(LOG_ERR, "ldp_get_peer_metadata_as_bytes() ERROR NULL content_name passed");
@@ -470,14 +474,31 @@ char * ldp_get_peer_metadata_as_bytes(TCBuf *ns, char *remote_peer_id_common_nam
 		LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_bytes() NULL access_control_obj passed to , ignore");
 	}
 
-	sprintf(uri, DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0, strdup(remote_peer_id_common_name));
-  
+	//
+	// We should check that the ns provided reflects the standard definition for
+	// peergroup.  
+	if (ns_peergroup_peers == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
+	 	ns_peergroup_peers = strlen(DEFAULT_LDP_PEERGROUP_PEERS);
+	}
+
+	// ccnush metadata
+	// Creat a peerid in the peergroup namespace for metadata
+	// XXX We really want to be writing this under: LDP_DEFAULT_PEERGROUP_PEERS_PEERID_METADATA_1_0_0
+	// #define DEFAULT_LDP_PEERGROUP_PEERS "ccnx:/ldp.iotone.io/pg/default/peers"
+	// #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
+	// #define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/%s/metadata_1.0.0"
+	// "ccnx:/ldp.iotone.io/pg/default/peers" "/%s/metadata_1.0.0" 
+	strcpy(uri, strdup(ns_peergroup_peers));
+	strcpy(uri, LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+	sprintf(uri, strdup(remote_peer_id_common_name));
+
 	bytes = ldp_private_ccnsip_data(uri, LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT, DEFAULT_LDP_SCOPE, data_len);
   	
 	return bytes;
 }
 
-char** ldp_get_peers(TCBuf *ns, int *peer_names_length, char *access_control_obj) {
+char** ldp_get_peers(char *ns_peergroup_peers, int *peer_names_length, char *access_control_obj) {
 	char **peer_names = {0};
 
 	LDPLOG(LOG_DEBUG, "ldp_get_peers() begin");
@@ -486,7 +507,23 @@ char** ldp_get_peers(TCBuf *ns, int *peer_names_length, char *access_control_obj
 		LDPLOG(LOG_DEBUG, "ldp_get_peers() NULL access_control_obj passed, ignore");
 	}
 
-	peer_names = ldp_private_get_ccn_child_name_components_under_name(DEFAULT_LDP_PEERGROUP_PEERS, peer_names_length);
+	//
+	// We should check that the ns provided reflects the standard definition for
+	// peergroup.
+	if (ns_peergroup_peers == NULL) {
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
+	 	ns_peergroup_peers = strlen(DEFAULT_LDP_PEERGROUP_PEERS);
+	}
+
+	// ccnush metadata
+	// Creat a peerid in the peergroup namespace for metadata
+	// XXX We really want to be writing this under: LDP_DEFAULT_PEERGROUP_PEERS_PEERID_METADATA_1_0_0
+	// #define DEFAULT_LDP_PEERGROUP_PEERS "ccnx:/ldp.iotone.io/pg/default/peers"
+	// #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
+	// #define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/%s/metadata_1.0.0"
+	// "ccnx:/ldp.iotone.io/pg/default/peers" "/%s/metadata_1.0.0" 
+
+	peer_names = ldp_private_get_ccn_child_name_components_under_name(ns_peergroup_peers, peer_names_length);
 	LDPLOG(LOG_DEBUG, "ldp_get_peers(), we found %d names", *peer_names_length);
 	if (peer_names != NULL) {
 		LDPLOG(LOG_DEBUG, "ldp_get_peers(), first element: peer_names[0]=%s", peer_names[0]);
@@ -532,12 +569,12 @@ int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri) {
   	return 0;	
 }
 
-int ldp_write_peer_metadata_from_json(TCBuf* ns, char *peer_id_common_name, TJson* json, char *access_control_obj) {
-	return ldp_write_peer_metadata_from_bytes(peer_id_common_name, cJSON_Print(json), access_control_obj);
+int ldp_write_peer_metadata_from_json(char *ns_peergroup_peers, char *peer_id_common_name, TJson* json, char *access_control_obj) {
+	return ldp_write_peer_metadata_from_bytes(ns_peergroup_peers, peer_id_common_name, cJSON_Print(json), access_control_obj);
 }
 
-TJson* ldp_get_peer_metadata_as_json(TCBuf* ns, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
-	const char* data = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
+TJson* ldp_get_peer_metadata_as_json(char *ns_peergroup_peers, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj) {
+	const char* data = ldp_get_peer_metadata_as_bytes(ns_peergroup_peers, remote_peer_id_common_name, data_length, access_control_obj);
 	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_json get data");
 	
 	TJson* jsonroot = cJSON_Parse(data);
@@ -550,9 +587,8 @@ TJson* ldp_get_peer_metadata_as_json(TCBuf* ns, char *remote_peer_id_common_name
 	}
 }
 
-TJson* ldp_get_peers_as_json(TCBuf* ns, int *peer_names_length, char *access_control_obj) {
-	// const char **peer_names = ldp_get_peer_metadata_as_bytes(remote_peer_id_common_name, data_length, access_control_obj);
-	const char **peer_names = ldp_get_peers(peer_names_length, NULL);
+TJson* ldp_get_peers_as_json(char *ns_peergroup_peers, int *peer_names_length, char *access_control_obj) {
+	const char **peer_names = ldp_get_peers(ns_peergroup_peers, peer_names_length, NULL);
 	TJson* jsondata = cJSON_CreateArray();
 	int i;
 

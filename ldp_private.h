@@ -99,7 +99,7 @@ char ** ldp_private_get_ccn_child_name_components_under_name(char *uri_prefix, i
 // XXX Change this back to 4 seconds when the event loop firing is fixed
 #define LDP_CMD_FRESHNESS_IN_SEC_DEFAULT 3
 #define LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT 1000
-
+#define LDP_MAX_NAME_LENGTH 256
 /* Forward Declarations */
 struct LDPSettings;
 struct LDPServiceHandle;

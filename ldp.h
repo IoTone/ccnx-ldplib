@@ -52,7 +52,7 @@ extern "C"
 #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_SYNC_TOPO_PREFIX  "ccnx:/ldp.iotone.io/pg/default/peers/%s/sync-info"
 #define LDP_PEERGROUP_PEERS_PEERID_SYNC_TOPO_COMPONENT  "/peers/%s/sync-info"
 #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
-#define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/peers/%s/metadata_1.0.0"
+#define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/%s/metadata_1.0.0"
 #define DEFAULT_LDP_NAMESPACE_ROUTE "add ccnx:/ldp.iotone.io udp 224.0.23.170 59695 3 16"
 #define DEFAULT_LDP_USER_KEYS_ROUTE "add ccnx:/ccnx.org/Users udp 224.0.23.170 59695 3 16"
 #define LDP_API_VERSION "0.9.0.1"
@@ -69,12 +69,12 @@ int ldp_settings_set_sys_fs_path(TLDPSettings *settings, char *path);
 int ldp_settings_set_sys_logfile(TLDPSettings *settings, char *path);
 int ldp_settings_set_user_id(TLDPSettings *settings, char *user_id);
 int ldp_settings_set_keystore_uri(TLDPSettings *settings, char *keystore_uri);
-int ldp_write_peer_metadata_from_bytes(TCBuf *ns, char *peer_id_common_name, char *metadata, char *access_control_obj);
-char * ldp_get_peer_metadata_as_bytes(TCBuf *ns, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
-char ** ldp_get_peers(TCBuf *ns, int *peer_names_length, char *access_control_obj);
-int ldp_write_peer_metadata_from_json(TCBuf *ns, char *peer_id_common_name, TJson* json, char *access_control_obj);
-TJson* ldp_get_peer_metadata_as_json(TCBuf *ns, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
-TJson* ldp_get_peers_as_json(TCBuf *ns, int *peer_names_length, char *access_control_obj);
+int ldp_write_peer_metadata_from_bytes(char *ns, char *peer_id_common_name, char *metadata, char *access_control_obj);
+char * ldp_get_peer_metadata_as_bytes(char *ns, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
+char ** ldp_get_peers(char *ns, int *peer_names_length, char *access_control_obj);
+int ldp_write_peer_metadata_from_json(char *ns, char *peer_id_common_name, TJson* json, char *access_control_obj);
+TJson* ldp_get_peer_metadata_as_json(char *ns, char *remote_peer_id_common_name, size_t *data_length, char *access_control_obj);
+TJson* ldp_get_peers_as_json(char *ns, int *peer_names_length, char *access_control_obj);
 
 /*
  * UTILITY Methods
