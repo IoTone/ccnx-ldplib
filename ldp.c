@@ -380,7 +380,7 @@ int ldp_write_peer_metadata_from_bytes(char *ns_peergroup_peers, char *peer_id_c
 	// peergroup.  
 	if (ns_peergroup_peers == NULL) {
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
-	 	ns_peergroup_peers = strlen(DEFAULT_LDP_PEERGROUP_PEERS);
+	 	ns_peergroup_peers = strdup(DEFAULT_LDP_PEERGROUP_PEERS);
 	}
 
 	if (access_control_obj == NULL) {
@@ -479,7 +479,7 @@ char * ldp_get_peer_metadata_as_bytes(char *ns_peergroup_peers, char *remote_pee
 	// peergroup.  
 	if (ns_peergroup_peers == NULL) {
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
-	 	ns_peergroup_peers = strlen(DEFAULT_LDP_PEERGROUP_PEERS);
+	 	ns_peergroup_peers = strdup(DEFAULT_LDP_PEERGROUP_PEERS);
 	}
 
 	// ccnush metadata
@@ -512,7 +512,7 @@ char** ldp_get_peers(char *ns_peergroup_peers, int *peer_names_length, char *acc
 	// peergroup.
 	if (ns_peergroup_peers == NULL) {
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
-	 	ns_peergroup_peers = strlen(DEFAULT_LDP_PEERGROUP_PEERS);
+	 	ns_peergroup_peers = strdup(DEFAULT_LDP_PEERGROUP_PEERS);
 	}
 
 	// ccnush metadata

@@ -37,7 +37,7 @@ CC = gcc
 CFLAGS = -g -Wall -Wextra -O2
 AR = ar
 
-default: externaldeps $(PROGRAMS) $(LIBS)
+default: externaldeps verifyenv $(PROGRAMS) $(LIBS)
 
 testframework:
 	(cd $(EXTERNAL_DIR) && wget https://googletest.googlecode.com/files/gtest-1.6.0.zip && unzip -o ./gtest-1.6.0.zip && cd gtest-1.6.0 && ./configure && make)
@@ -69,4 +69,14 @@ ldputil: $(OBJS) ldputil.o
 clean:
 	rm -f $(PROGRAMS) $(OBJS) *.o *.a *.dSYM core core.*
 
+verifyenv:
+	@test -d "$(INSTALL_BASE)" || (echo; \
+	echo '*******************************************************'; \
+	echo '    Missing INSTALL_BASE,'; \
+	echo '    Cannot build yet.'; \
+	echo; \
+	echo '  Set INSTALL_BASE to the location of your CCNx insallation'; \
+	echo '*******************************************************'; \
+	echo; \
+	exit 1;)
 .PHONY: all clean test externaldeps

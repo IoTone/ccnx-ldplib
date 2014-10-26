@@ -65,7 +65,7 @@ TEST(LDPCUnitTest, WritePeerMetadata) {
   EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
   LDPLOG(LOG_DEBUG, "about to write peer metadata");
   // ret = ldp_write_peer_metadata_from_bytes(ldp_private_create_str("8675309"), ldp_DEFAULT_PEERGROUP_PEERS, ldp_private_create_str(metastr) , strlen(metastr), NULL, psobj); /* Write metadata from buffer */
-  ret = ldp_write_peer_metadata_from_bytes(ldp_private_create_str("86753099"), ldp_private_create_str(metastr) , NULL); /* Write metadata from buffer */
+  ret = ldp_write_peer_metadata_from_bytes(NULL, ldp_private_create_str("86753099"), ldp_private_create_str(metastr) , NULL); /* Write metadata from buffer */
   
   LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
   EXPECT_EQ(ret, 0);
@@ -94,7 +94,7 @@ TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
   EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
   LDPLOG(LOG_DEBUG, "about to write peer metadata");
   // ret = ldp_write_peer_metadata_from_bytes(ldp_private_create_str("8675309"), ldp_DEFAULT_PEERGROUP_PEERS, ldp_private_create_str(metastr) , strlen(metastr), NULL, psobj); /* Write metadata from buffer */
-  ret = ldp_write_peer_metadata_from_json(ldp_private_create_str("86753098"), jsonroot, NULL); /* Write metadata from buffer */
+  ret = ldp_write_peer_metadata_from_json(NULL, ldp_private_create_str("86753098"), jsonroot, NULL); /* Write metadata from buffer */
   
   LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
   EXPECT_EQ(ret, 0);
@@ -120,7 +120,7 @@ TEST(LDPCUnitTest, GetPeerMetadata) {
 
   
   LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_bytes(%s)", "86753099");
-  metadata = ldp_get_peer_metadata_as_bytes("86753099", &bytes_read, NULL);
+  metadata = ldp_get_peer_metadata_as_bytes(NULL, "86753099", &bytes_read, NULL);
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_bytes()");
   EXPECT_TRUE(metadata != NULL);
   if (metadata != NULL) {
@@ -150,7 +150,7 @@ TEST(LDPCUnitTest, GetPeerMetadataAsJSON) {
 
   
   LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_json(%s)", "86753098");
-  metadata = ldp_get_peer_metadata_as_json("86753098", &bytes_read, NULL);
+  metadata = ldp_get_peer_metadata_as_json(NULL, "86753098", &bytes_read, NULL);
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_json()");
   EXPECT_TRUE(metadata != NULL);
   if (metadata != NULL) {
@@ -180,7 +180,7 @@ TEST(LDPCUnitTest, GetPeers) {
 
   
   LDPLOG(LOG_DEBUG, "about to call ldp_get_peers()");
-  names = ldp_get_peers(&name_count, NULL);
+  names = ldp_get_peers(NULL, &name_count, NULL);
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peers()");
   EXPECT_TRUE(names != NULL);
   EXPECT_TRUE(name_count >= 1);
@@ -210,7 +210,7 @@ TEST(LDPCUnitTest, GetPeersAsJSON) {
 
   
   LDPLOG(LOG_DEBUG, "about to call ldp_get_peers()");
-  jsondata = ldp_get_peers_as_json(&name_count, NULL);
+  jsondata = ldp_get_peers_as_json(NULL, &name_count, NULL);
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peers()");
   EXPECT_TRUE(jsondata);
   EXPECT_TRUE(name_count >= 1);
