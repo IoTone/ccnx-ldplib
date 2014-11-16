@@ -468,6 +468,7 @@ char * ldp_get_peer_metadata_as_bytes(char *ns_peergroup_peers, char *remote_pee
 	LDPLOG(LOG_DEBUG, "ldp_get_peer_metadata_as_bytes() begin");
 	char* bytes = NULL;
 	char uri[LDP_MAX_NAME_LENGTH];
+	memset(uri, '\0', LDP_MAX_NAME_LENGTH);
 
 	if (remote_peer_id_common_name == NULL) {
 		LDPLOG(LOG_ERR, "ldp_get_peer_metadata_as_bytes() ERROR NULL content_name passed");
@@ -493,9 +494,9 @@ char * ldp_get_peer_metadata_as_bytes(char *ns_peergroup_peers, char *remote_pee
 	// #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
 	// #define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/%s/metadata_1.0.0"
 	// "ccnx:/ldp.iotone.io/pg/default/peers" "/%s/metadata_1.0.0" 
-	strcpy(uri, strdup(ns_peergroup_peers));
-	strcpy(uri, LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
-	sprintf(uri, strdup(remote_peer_id_common_name));
+	strcat(uri, strdup(ns_peergroup_peers));
+	strcat(uri, LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+	sprintf(uri, uri, strdup(remote_peer_id_common_name));
 
 	bytes = ldp_private_ccnsip_data(uri, LDP_CCN_GET_TIMEOUT_IN_MILLIS_DEFAULT, DEFAULT_LDP_SCOPE, data_len);
   	
