@@ -362,6 +362,8 @@ int ldp_write_peer_metadata_from_bytes(char *ns_peergroup_peers, char *peer_id_c
 	char uri[LDP_MAX_NAME_LENGTH]; // XXX Increase this
 
 	unsigned long metadata_bytes_length = 0;
+
+	memset(uri, '\0', LDP_MAX_NAME_LENGTH);
 	if (peer_id_common_name == NULL) {
 		LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() ERROR NULL content_name passed to ldp_write_peer_metadata_from_bytes()");
 		status = -1;
@@ -379,8 +381,8 @@ int ldp_write_peer_metadata_from_bytes(char *ns_peergroup_peers, char *peer_id_c
 	// We should check that the ns provided reflects the standard definition for
 	// peergroup.  
 	if (ns_peergroup_peers == NULL) {
-		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes()");
 	 	ns_peergroup_peers = strdup(DEFAULT_LDP_PEERGROUP_PEERS);
+	 	LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() NULL ns_peergroup passed to ldp_write_peer_metadata_from_bytes(), using: %s", ns_peergroup_peers);
 	}
 
 	if (access_control_obj == NULL) {
@@ -426,13 +428,15 @@ int ldp_write_peer_metadata_from_bytes(char *ns_peergroup_peers, char *peer_id_c
 		// #define DEFAULT_LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "ccnx:/ldp.iotone.io/pg/default/peers/%s/metadata_1.0.0"
 		// #define LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0  "/%s/metadata_1.0.0"
 		// "ccnx:/ldp.iotone.io/pg/default/peers" "/%s/metadata_1.0.0" 
-		strcpy(uri, ns_peergroup_peers);
-		strcpy(uri, LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
-		sprintf(uri, peer_id_common_name);
+		strcat(uri, ns_peergroup_peers);
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes value of uri = %s", uri);
+		strcat(uri, LDP_PEERGROUP_PEERS_PEERID_METADATA_1_0_0);
+		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes value of uri = %s", uri);
+		sprintf(uri, uri, peer_id_common_name);
 		LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() to name uri = %s", uri);
 
 		if (ccn_name_from_uri(content_uri, uri) <= 0) {
-			LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() failed to create ccn_name_from_uri for %s%s", DEFAULT_LDP_PEERGROUP_PEERS, peer_id_common_name);
+			LDPLOG(LOG_ERR, "ldp_write_peer_metadata_from_bytes() failed to create ccn_name_from_uri for %s", uri);
 			status = -1;
 		} else {
 			// LDPLOG(LOG_DEBUG, "ldp_write_peer_metadata_from_bytes() created ccn_name_from_uri() content_name = %s, ret=%d", ccn_charbuf_as_string(content_uri), ret);
