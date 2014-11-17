@@ -79,6 +79,7 @@ TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
   TLDPSettings *ldp_settings_obj = NULL;
   int ret;
   char *metastr = "{ \"peerID\" : \"8675310\"}";
+  char *metastr2 = "{ \"peerID\" : \"8675311\"}";
   TJson *jsonroot = cJSON_Parse(metastr);
 
   if (jsonroot == NULL) {
@@ -93,11 +94,15 @@ TEST(LDPCUnitTest, WritePeerMetadataFromJSON) {
   EXPECT_TRUE(ldp_settings_obj);
   EXPECT_TRUE(ldp_settings_init(ldp_settings_obj) == 0);
   LDPLOG(LOG_DEBUG, "about to write peer metadata");
-  // ret = ldp_write_peer_metadata_from_bytes(ldp_private_create_str("8675309"), ldp_DEFAULT_PEERGROUP_PEERS, ldp_private_create_str(metastr) , strlen(metastr), NULL, psobj); /* Write metadata from buffer */
   ret = ldp_write_peer_metadata_from_json(NULL, ldp_private_create_str("86753098"), jsonroot, NULL); /* Write metadata from buffer */
-  
   LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
   EXPECT_EQ(ret, 0);
+
+  jsonroot = cJSON_Parse(metastr2);
+  ret = ldp_write_peer_metadata_from_json("ccnx:/nondefaultprefix.iotone.io/pg/nondefault/peers", ldp_private_create_str("8675311"), jsonroot, NULL); /* Write metadata from buffer */
+  LDPLOG(LOG_DEBUG, "done with ldp_write_peer_metadata_from_bytes()");
+  EXPECT_EQ(ret, 0);
+
   ldp_settings_destroy(&ldp_settings_obj);
   EXPECT_EQ(NULL, ldp_settings_obj);
   closelog();
@@ -151,6 +156,15 @@ TEST(LDPCUnitTest, GetPeerMetadataAsJSON) {
   
   LDPLOG(LOG_DEBUG, "about to call ldp_get_peer_metadata_as_json(%s)", "86753098");
   metadata = ldp_get_peer_metadata_as_json(NULL, "86753098", &bytes_read, NULL);
+  LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_json()");
+  EXPECT_TRUE(metadata != NULL);
+  if (metadata != NULL) {
+    LDPLOG(LOG_DEBUG, "read metadata = %s", cJSON_Print(metadata));
+  }
+  EXPECT_TRUE(bytes_read > 0);
+  LDPLOG(LOG_DEBUG, "Read = %d", bytes_read);
+
+  metadata = ldp_get_peer_metadata_as_json("ccnx:/nondefaultprefix.iotone.io/pg/nondefault/peers", "8675311", &bytes_read, NULL);
   LDPLOG(LOG_DEBUG, "done with call to ldp_get_peer_metadata_as_json()");
   EXPECT_TRUE(metadata != NULL);
   if (metadata != NULL) {
